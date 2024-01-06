@@ -14,6 +14,9 @@
     "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.8.2",
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
     "@ethersproject/providers": "~5.7.2",
     "@heroicons/react": "~2.0.11",
     "@rainbow-me/rainbowkit": "1.3.0",
@@ -21,6 +24,8 @@
     "@uniswap/v2-sdk": "~3.0.1",
     "blo": "~1.0.1",
     "daisyui": "~4.4.19",
+    "ethers": "^6.9.2",
+    "framer-motion": "^10.17.9",
     "next": "~13.1.6",
     "nextjs-progressbar": "~0.0.16",
     "qrcode.react": "~3.1.0",

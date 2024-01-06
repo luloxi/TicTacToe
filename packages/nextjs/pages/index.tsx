@@ -1,60 +1,114 @@
-import Link from "next/link";
+import { useEffect, useState } from "react";
+// import Link from "next/link";
+import { NewGameProps } from "../types/TicTacToeTypes";
+import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
+// import { ethers } from "ethers";
 import type { NextPage } from "next";
-import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+// import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
+import { Address } from "~~/components/scaffold-eth";
+import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
+// import TicTacToeBoard from "~~/components/tictactoe/TicTacToeBoard";
+import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
+  const [gameHistory, setGameHistory] = useState<NewGameProps[]>([]);
+
+  // Event history hooks
+  const { data: GameCreatedHistory } = useScaffoldEventHistory({
+    contractName: "TicTacToe",
+    eventName: "GameCreated",
+    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
+    blockData: false,
+  });
+
+  // useEffect for dynamic updating? (not sure if needed)
+  useEffect(() => {
+    const mappedHistory = GameCreatedHistory?.map(event => ({
+      gameId: parseInt(event.args[0].toString()),
+      player1: event.args[1],
+      player2: event.args[2],
+      bet: parseInt(event.args[3].toString()),
+    })) as NewGameProps[];
+    setGameHistory(mappedHistory);
+  }, [GameCreatedHistory]);
+
+  // Event subscription hooks
+  useScaffoldEventSubscriber({
+    contractName: "TicTacToe",
+    eventName: "GameCreated",
+    listener: (logs: any[]) => {
+      setGameHistory(indexedHistory => {
+        const newGameCreated: NewGameProps = {
+          gameId: parseInt(logs[0].args[0].toString()),
+          player1: logs[0].args[1],
+          player2: logs[0].args[2],
+          bet: parseInt(logs[0].args[3].toString()),
+        };
+        return [newGameCreated, ...indexedHistory];
+      });
+    },
+  });
+
+  const gameCards = gameHistory?.map(game => {
+    // This is where all events relevant to a single game will be stored and sorted which is a palindrome
+    return game;
+  });
+
   return (
     <>
       <MetaHeader />
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center mb-8">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
-          </h1>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/nextjs/pages/index.tsx
-            </code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              YourContract.sol
-            </code>{" "}
-            in{" "}
-            <code className="italic bg-base-300 text-base font-bold max-w-full break-words break-all inline-block">
-              packages/hardhat/contracts
-            </code>
-          </p>
-        </div>
-
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <MagnifyingGlassIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Explore your local transactions with the{" "}
-                <Link href="/blockexplorer" passHref className="link">
-                  Block Explorer
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-          </div>
-        </div>
+      <div
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundImage: "url('background.jpg')",
+            backgroundSize: "cover",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "center",
+            filter: "brightness(0.3)",
+          }}
+        />
+        <Flex direction={{ base: "column", md: "row" }} justify="center" gap={10} align="center" marginTop={4}>
+          <CreateChallengeBox />
+          <Card
+            direction={{ base: "column", sm: "row" }}
+            width="container.sm"
+            maxWidth={{ base: "container.sm", sm: "container.sm", md: "container.md" }}
+            variant="solid"
+            maxHeight={{ base: "container.sm", sm: "container.sm", md: "480" }}
+            overflow={"auto"}
+            textColor={"white"}
+            backgroundColor={"gray.900"}
+          >
+            <CardBody>
+              <Heading size="xl">⭕ See your active challenges! ❌</Heading>
+              <Flex direction="column" alignItems="center" justifyContent="center">
+                {gameCards?.map(({ gameId, player1, player2 /* , bet */ }) => (
+                  <>
+                    <p>GameId: {gameId}</p>
+                    <p>
+                      Player 1: <Address address={player1} />
+                    </p>
+                    <p>
+                      Player 2: <Address address={player2} />
+                    </p>
+                    {/* <p>Bet: {ethers.utils.formatEther(bet.toString())} ETH</p> */}
+                  </>
+                ))}
+              </Flex>
+            </CardBody>
+          </Card>
+        </Flex>
       </div>
     </>
   );
