@@ -31,16 +31,6 @@ contract TicTacToe {
     }
 
     mapping(uint256 => Game) public games;
-    uint8[3][8] private winConditions = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8], // Rows
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8], // Columns
-        [0, 4, 8],
-        [2, 4, 6] // Diagonals
-    ];
 
     event GameCreated(uint256 indexed gameId, address indexed player1, address indexed player2, uint256 bet);
     event GameAccepted(uint256 indexed gameId, address indexed team1, address indexed team2);
@@ -61,15 +51,13 @@ contract TicTacToe {
     }
 
     modifier gameNotCancelled(uint256 gameId) {
-        require(games[gameId].state != GameState.CANCELED, "Game is canceled");
+        require(games[gameId].state != GameState.CANCELED, "Game was canceled!");
         _;
     }
 
     /* EXTERNAL AND PUBLIC FUNCTIONS */
 
     function createGame(address _player2) external payable {
-        // gameId = keccak256(abi.encodePacked(gameIdCounter, block.timestamp, msg.sender, _player2));
-
         games[gameIdCounter] = Game({
             player1: msg.sender,
             player2: _player2,
@@ -123,7 +111,7 @@ contract TicTacToe {
     function acceptGame(uint256 _gameId) internal {
         require(games[_gameId].state == GameState.PENDING, "Game not in pending state");
         require(games[_gameId].player2 == msg.sender, "Not player2");
-        require(msg.value >= games[_gameId].bet, "Haven't sent enough ETH!");
+        require(msg.value == games[_gameId].bet, "Haven't sent enough ETH!");
 
         games[_gameId].state = GameState.PLAYING;
 
@@ -134,6 +122,20 @@ contract TicTacToe {
         games[gameId].state = state;
         emit GameFinished(gameId, winner, state);
     }
+
+    // This used to be the array to check against if there was a win condition already.
+    // It is now replaced by the internal function checkWin
+    //
+    //  uint8[3][8] private winConditions = [
+    //     [0, 1, 2],
+    //     [3, 4, 5],
+    //     [6, 7, 8], // Rows
+    //     [0, 3, 6],
+    //     [1, 4, 7],
+    //     [2, 5, 8], // Columns
+    //     [0, 4, 8],
+    //     [2, 4, 6] // Diagonals
+    // ];
 
     function checkWin(uint256 gameId, uint8 position, uint8 playerSymbol) internal view returns (bool) {
         uint8 row = position / 3;
@@ -177,7 +179,7 @@ contract TicTacToe {
 
     /* VIEW AND PURE FUNCTIONS */
 
-    function getCurrentPlayer(uint256 _gameId) internal view returns (uint256) {
+    function getCurrentPlayer(uint256 _gameId) external view returns (uint256) {
         return games[_gameId].moves % 2 == 0 ? 1 : 2;
     }
 
