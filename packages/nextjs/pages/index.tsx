@@ -93,16 +93,19 @@ const Home: NextPage = () => {
             <CardBody>
               <Heading size="xl">⭕ See your active challenges! ❌</Heading>
               <Flex direction="column" alignItems="center" justifyContent="center">
-                {gameCards?.map(({ gameId, player1, player2 /* , bet */ }) => (
+                {gameCards?.map(({ gameId, player1, player2, bet }) => (
                   <>
                     <p>GameId: {gameId}</p>
-                    <p>
-                      Player 1: <Address address={player1} />
-                    </p>
-                    <p>
-                      Player 2: <Address address={player2} />
-                    </p>
-                    {/* <p>Bet: {ethers.utils.formatEther(bet.toString())} ETH</p> */}
+                    <Flex direction="row" gap={6}>
+                      <p>
+                        Player 1: <Address address={player1} />
+                      </p>
+                      <p>
+                        Player 2: <Address address={player2} />
+                      </p>
+                      <p>Bet: {bet.toString()} ETH</p>
+                    </Flex>
+                    <span>------------------------</span>
                   </>
                 ))}
               </Flex>

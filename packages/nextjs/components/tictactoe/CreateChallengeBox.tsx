@@ -13,7 +13,7 @@ const CreateChallengeBox = ({}) => {
     contractName: "TicTacToe",
     functionName: "createGame",
     args: [player2Address],
-    // value: betAmount ? betAmount.toString() : undefined,
+    // value: betAmount ? betAmount : undefined,
   });
 
   console.log("Bet amount: ", betAmount);
