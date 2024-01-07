@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 // import Link from "next/link";
 import { NewGameProps } from "../types/TicTacToeTypes";
 import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
-// import { ethers } from "ethers";
+import { ethers } from "ethers";
 import type { NextPage } from "next";
+// import { parseEther } from "viem";
 // import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { Address } from "~~/components/scaffold-eth";
@@ -51,7 +52,7 @@ const Home: NextPage = () => {
   });
 
   const gameCards = gameHistory?.map(game => {
-    // This is where all events relevant to a single game will be stored and sorted which is a palindrome
+    // This is where all events relevant to a single game will be stored
     return game;
   });
 
@@ -103,7 +104,7 @@ const Home: NextPage = () => {
                       <p>
                         Player 2: <Address address={player2} />
                       </p>
-                      <p>Bet: {bet.toString()} ETH</p>
+                      <p>Bet: {parseFloat(ethers.formatEther(bet.toString())).toFixed(4)} ETH</p>
                     </Flex>
                     <span>------------------------</span>
                   </>

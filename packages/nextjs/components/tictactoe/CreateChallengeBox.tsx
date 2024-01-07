@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { Button, Card, CardBody, Heading, Stack, Text } from "@chakra-ui/react";
-// import { ethers } from "ethers";
+import { ethers } from "ethers";
 import { AddressInput, EtherInput } from "~~/components/scaffold-eth";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
@@ -13,7 +13,7 @@ const CreateChallengeBox = ({}) => {
     contractName: "TicTacToe",
     functionName: "createGame",
     args: [player2Address],
-    // value: betAmount ? betAmount : undefined,
+    value: betAmount ? ethers.parseEther(betAmount) : undefined,
   });
 
   console.log("Bet amount: ", betAmount);
