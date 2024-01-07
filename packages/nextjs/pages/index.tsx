@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
-// import Link from "next/link";
-import { NewGameProps } from "../types/TicTacToeTypes";
+import { GameAcceptedProps, GameCreatedProps, GameFinishedProps, MoveMadeProps } from "../types/TicTacToeTypes";
 import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import { ethers } from "ethers";
 import type { NextPage } from "next";
-// import { parseEther } from "viem";
-// import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { Address } from "~~/components/scaffold-eth";
 import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
@@ -13,12 +10,36 @@ import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
 import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
-  const [gameHistory, setGameHistory] = useState<NewGameProps[]>([]);
+  const [gameHistory, setGameHistory] = useState<GameCreatedProps[]>([]);
+  const [gameAcceptedHistory, setGameAcceptedHistory] = useState<GameAcceptedProps[]>([]);
+  const [moveMadeHistory, setMoveMadeHistory] = useState<MoveMadeProps[]>([]);
+  const [gameFinishedHistory, setGameFinishedHistory] = useState<GameFinishedProps[]>([]);
 
   // Event history hooks
   const { data: GameCreatedHistory } = useScaffoldEventHistory({
     contractName: "TicTacToe",
     eventName: "GameCreated",
+    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
+    blockData: false,
+  });
+
+  const { data: GameAcceptedHistory } = useScaffoldEventHistory({
+    contractName: "TicTacToe",
+    eventName: "GameAccepted",
+    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
+    blockData: false,
+  });
+
+  const { data: MoveMadeHistory } = useScaffoldEventHistory({
+    contractName: "TicTacToe",
+    eventName: "MoveMade",
+    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
+    blockData: false,
+  });
+
+  const { data: GameFinishedHistory } = useScaffoldEventHistory({
+    contractName: "TicTacToe",
+    eventName: "GameFinished",
     fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
     blockData: false,
   });
@@ -30,9 +51,36 @@ const Home: NextPage = () => {
       player1: event.args[1],
       player2: event.args[2],
       bet: parseInt(event.args[3].toString()),
-    })) as NewGameProps[];
+    })) as GameCreatedProps[];
     setGameHistory(mappedHistory);
   }, [GameCreatedHistory]);
+
+  useEffect(() => {
+    const mappedHistory = GameAcceptedHistory?.map(event => ({
+      gameId: parseInt(event.args[0].toString()),
+      player1: event.args[1],
+      player2: event.args[2],
+    })) as GameAcceptedProps[];
+    setGameAcceptedHistory(mappedHistory);
+  }, [GameAcceptedHistory]);
+
+  useEffect(() => {
+    const mappedHistory = MoveMadeHistory?.map(event => ({
+      gameId: parseInt(event.args[0].toString()),
+      player: event.args[1],
+      position: parseInt(event.args[2].toString()),
+    })) as MoveMadeProps[];
+    setMoveMadeHistory(mappedHistory);
+  }, [MoveMadeHistory]);
+
+  useEffect(() => {
+    const mappedHistory = GameFinishedHistory?.map(event => ({
+      gameId: parseInt(event.args[0].toString()),
+      winner: event.args[1],
+      state: parseInt(event.args[2].toString()),
+    })) as GameFinishedProps[];
+    setGameFinishedHistory(mappedHistory);
+  }, [GameFinishedHistory]);
 
   // Event subscription hooks
   useScaffoldEventSubscriber({
@@ -40,13 +88,68 @@ const Home: NextPage = () => {
     eventName: "GameCreated",
     listener: (logs: any[]) => {
       setGameHistory(indexedHistory => {
-        const newGameCreated: NewGameProps = {
+        const newGameCreated: GameCreatedProps = {
           gameId: parseInt(logs[0].args[0].toString()),
           player1: logs[0].args[1],
           player2: logs[0].args[2],
           bet: parseInt(logs[0].args[3].toString()),
         };
-        return [newGameCreated, ...indexedHistory];
+
+        // Check if the game with the same gameId already exists
+        const existingGame = indexedHistory.find(game => game.gameId === newGameCreated.gameId);
+
+        // If it doesn't exist, add the new game to the history
+        if (!existingGame) {
+          return [newGameCreated, ...indexedHistory];
+        }
+
+        // If it exists, return the existing history without adding a duplicate
+        return indexedHistory;
+      });
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "TicTacToe",
+    eventName: "GameAccepted",
+    listener: (logs: any[]) => {
+      setGameAcceptedHistory(indexedHistory => {
+        const newGameAccepted: GameAcceptedProps = {
+          gameId: parseInt(logs[0].args[0].toString()),
+          player1: logs[0].args[1],
+          player2: logs[0].args[2],
+        };
+        return [newGameAccepted, ...indexedHistory];
+      });
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "TicTacToe",
+    eventName: "MoveMade",
+    listener: (logs: any[]) => {
+      setMoveMadeHistory(indexedHistory => {
+        const newMoveMade: MoveMadeProps = {
+          gameId: parseInt(logs[0].args[0].toString()),
+          player: logs[0].args[1],
+          position: parseInt(logs[0].args[2].toString()),
+        };
+        return [newMoveMade, ...indexedHistory];
+      });
+    },
+  });
+
+  useScaffoldEventSubscriber({
+    contractName: "TicTacToe",
+    eventName: "GameFinished",
+    listener: (logs: any[]) => {
+      setGameFinishedHistory(indexedHistory => {
+        const newGameFinished: GameFinishedProps = {
+          gameId: parseInt(logs[0].args[0].toString()),
+          winner: logs[0].args[1],
+          state: parseInt(logs[0].args[2].toString()),
+        };
+        return [newGameFinished, ...indexedHistory];
       });
     },
   });
@@ -94,21 +197,34 @@ const Home: NextPage = () => {
             <CardBody>
               <Heading size="xl">⭕ See your active challenges! ❌</Heading>
               <Flex direction="column" alignItems="center" justifyContent="center">
-                {gameCards?.map(({ gameId, player1, player2, bet }) => (
-                  <>
-                    <p>GameId: {gameId}</p>
-                    <Flex direction="row" gap={6}>
-                      <p>
-                        Player 1: <Address address={player1} />
-                      </p>
-                      <p>
-                        Player 2: <Address address={player2} />
-                      </p>
-                      <p>Bet: {parseFloat(ethers.formatEther(bet.toString())).toFixed(4)} ETH</p>
-                    </Flex>
-                    <span>------------------------</span>
-                  </>
-                ))}
+                {gameCards?.map(({ gameId, player1, player2, bet }) => {
+                  const isGameAccepted = gameAcceptedHistory.some(acceptedGame => acceptedGame.gameId === gameId);
+                  const movesMade = moveMadeHistory.filter(move => move.gameId === gameId).length;
+                  const isGameFinished = gameFinishedHistory.some(finishedGame => finishedGame.gameId === gameId);
+
+                  return (
+                    <div key={gameId}>
+                      <p>GameId: {gameId}</p>
+                      <Flex direction="row" gap={6}>
+                        <p>
+                          Player 1: <Address address={player1} />
+                        </p>
+                        <p>
+                          Player 2: <Address address={player2} />
+                        </p>
+                      </Flex>
+                      <Flex direction="row" gap={6}>
+                        <p>Bet: {parseFloat(ethers.formatEther(bet.toString())).toFixed(4)} ETH</p>
+                        <p>Is game accepted?: {isGameAccepted ? "Yes" : "No"}</p>
+                      </Flex>
+                      <Flex direction="row" gap={6}>
+                        <p>Amount of moves made: {movesMade}</p>
+                        <p>Is game finished?: {isGameFinished ? "Yes" : "No"}</p>
+                      </Flex>
+                      <span>-----------------------------------------------------------------------</span>
+                    </div>
+                  );
+                })}
               </Flex>
             </CardBody>
           </Card>
