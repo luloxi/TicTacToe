@@ -35,7 +35,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     });
 
     setBoard(updatedBoard);
-  }, [movesList]);
+  }, [game.player1, movesList]);
 
   const handleMakeMove = async () => {
     try {
