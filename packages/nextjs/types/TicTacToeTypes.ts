@@ -22,3 +22,11 @@ export type GameFinishedProps = {
   winner: string;
   state: number;
 };
+
+export type TicTacToeBoardProps = {
+  game: GameCreatedProps;
+  isGameAccepted: boolean;
+  movesList: MoveMadeProps[];
+  movesAmount: number;
+  isGameFinished: boolean;
+};

@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { GameAcceptedProps, GameCreatedProps, GameFinishedProps, MoveMadeProps } from "../types/TicTacToeTypes";
 import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
-import { ethers } from "ethers";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
-import { Address } from "~~/components/scaffold-eth";
 import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
-// import TicTacToeBoard from "~~/components/tictactoe/TicTacToeBoard";
+import TicTacToeBoard from "~~/components/tictactoe/TicTacToeBoard";
 import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
@@ -155,8 +153,12 @@ const Home: NextPage = () => {
   });
 
   const gameCards = gameHistory?.map(game => {
-    // This is where all events relevant to a single game will be stored
-    return game;
+    const isGameAccepted = gameAcceptedHistory.some(acceptedGame => acceptedGame.gameId === game.gameId);
+    const movesList = moveMadeHistory.filter(move => move.gameId === game.gameId);
+    const movesAmount = movesList.length;
+    const isGameFinished = gameFinishedHistory.some(finishedGame => finishedGame.gameId === game.gameId);
+
+    return { game, isGameAccepted, movesList, movesAmount, isGameFinished };
   });
 
   return (
@@ -197,34 +199,16 @@ const Home: NextPage = () => {
             <CardBody>
               <Heading size="xl">⭕ See your active challenges! ❌</Heading>
               <Flex direction="column" alignItems="center" justifyContent="center">
-                {gameCards?.map(({ gameId, player1, player2, bet }) => {
-                  const isGameAccepted = gameAcceptedHistory.some(acceptedGame => acceptedGame.gameId === gameId);
-                  const movesMade = moveMadeHistory.filter(move => move.gameId === gameId).length;
-                  const isGameFinished = gameFinishedHistory.some(finishedGame => finishedGame.gameId === gameId);
-
-                  return (
-                    <div key={gameId}>
-                      <p>GameId: {gameId}</p>
-                      <Flex direction="row" gap={6}>
-                        <p>
-                          Player 1: <Address address={player1} />
-                        </p>
-                        <p>
-                          Player 2: <Address address={player2} />
-                        </p>
-                      </Flex>
-                      <Flex direction="row" gap={6}>
-                        <p>Bet: {parseFloat(ethers.formatEther(bet.toString())).toFixed(4)} ETH</p>
-                        <p>Is game accepted?: {isGameAccepted ? "Yes" : "No"}</p>
-                      </Flex>
-                      <Flex direction="row" gap={6}>
-                        <p>Amount of moves made: {movesMade}</p>
-                        <p>Is game finished?: {isGameFinished ? "Yes" : "No"}</p>
-                      </Flex>
-                      <span>-----------------------------------------------------------------------</span>
-                    </div>
-                  );
-                })}
+                {gameCards?.map(({ game, isGameAccepted, movesList, movesAmount, isGameFinished }) => (
+                  <TicTacToeBoard
+                    key={game.gameId}
+                    game={game}
+                    isGameAccepted={isGameAccepted}
+                    movesList={movesList}
+                    movesAmount={movesAmount}
+                    isGameFinished={isGameFinished}
+                  />
+                ))}
               </Flex>
             </CardBody>
           </Card>
