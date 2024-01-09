@@ -91,6 +91,7 @@ contract TicTacToe {
         require(position < 9, "Invalid position");
 
         uint8 currentPlayerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
+        require(currentPlayerSymbol == 1 && msg.sender == games[_gameId].player2, "Wait for your turn");
         games[_gameId].board[position] = currentPlayerSymbol;
         games[_gameId].moves++;
         games[_gameId].lastMoveTime = block.timestamp;
@@ -99,7 +100,7 @@ contract TicTacToe {
 
         // Check for win
         if (checkWin(_gameId, position, currentPlayerSymbol)) {
-            finishGame(_gameId, msg.sender, currentPlayerSymbol == 1 ? GameState.PLAYER1WON : GameState.PLAYER2WON);
+            finishGame(_gameId, msg.sender, currentPlayerSymbol == 1 ? GameState.PLAYER2WON : GameState.PLAYER1WON);
         } else if (games[_gameId].moves == 9) {
             // Check for a draw
             finishGame(_gameId, address(0), GameState.TIE);
