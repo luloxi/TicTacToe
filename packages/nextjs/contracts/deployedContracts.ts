@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     TicTacToe: {
-      address: "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           anonymous: false,
@@ -169,11 +169,6 @@ const deployedContracts = {
             {
               internalType: "uint256",
               name: "bet",
-              type: "uint256",
-            },
-            {
-              internalType: "uint256",
-              name: "lastMoveTime",
               type: "uint256",
             },
             {
