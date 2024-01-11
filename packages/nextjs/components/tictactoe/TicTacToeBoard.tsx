@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Address } from "../scaffold-eth";
 import { Button, Flex, Grid } from "@chakra-ui/react";
 import { ethers } from "ethers";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { MoveMadeProps, TicTacToeBoardProps } from "~~/types/TicTacToeTypes";
 
 const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
@@ -16,7 +16,13 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   const [betPayment, setBetPayment] = useState<number>(game.bet);
   const [board, setBoard] = useState<number[]>(Array(9).fill(0)); // Initialize an empty board
 
-  console.log("Moves list for game ID #", game.gameId, ": ", movesList);
+  const { data: getBoard } = useScaffoldContractRead({
+    contractName: "TicTacToe",
+    functionName: "getBoard",
+    args: [BigInt(game.gameId)],
+  });
+
+  console.log("getBoard reads for #", game.gameId, ": ", getBoard);
 
   const { writeAsync: makeMove } = useScaffoldContractWrite({
     contractName: "TicTacToe",
