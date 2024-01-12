@@ -3,17 +3,10 @@ import { Address } from "../scaffold-eth";
 import { Button, Flex, Grid } from "@chakra-ui/react";
 import { ethers } from "ethers";
 import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { MoveMadeProps, TicTacToeBoardProps } from "~~/types/TicTacToeTypes";
+import { TicTacToeBoardProps } from "~~/types/TicTacToeTypes";
 
-const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
-  game,
-  isGameAccepted,
-  movesList,
-  movesAmount,
-  isGameFinished,
-}) => {
+const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, movesAmount, isGameFinished }) => {
   const [position, setPosition] = useState<number>(0);
-  const [betPayment, setBetPayment] = useState<number>(game.bet);
   const [board, setBoard] = useState<number[]>(Array(9).fill(0)); // Initialize an empty board
 
   const { data: getBoard } = useScaffoldContractRead({
@@ -22,42 +15,33 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     args: [BigInt(game.gameId)],
   });
 
-  console.log("getBoard reads for #", game.gameId, ": ", getBoard);
+  console.log("getBoard reads: ", getBoard);
+
+  useEffect(() => {
+    // Update the local board based on the latest data from the contract
+    if (getBoard) {
+      setBoard(getBoard.map(Number));
+    }
+  }, [getBoard]);
 
   const { writeAsync: makeMove } = useScaffoldContractWrite({
     contractName: "TicTacToe",
     functionName: "makeMove",
     args: [BigInt(game.gameId), position],
-    value: BigInt(betPayment),
   });
 
-  useEffect(() => {
-    // Update the board based on the movesList
-    const updatedBoard = Array(9).fill(0);
-
-    movesList.forEach((move: MoveMadeProps) => {
-      const currentPlayerSymbol = move.player === game.player1 ? 1 : 2;
-      updatedBoard[move.position] = currentPlayerSymbol;
-    });
-
-    setBoard(updatedBoard);
-  }, [game.player1, movesList]);
+  const { writeAsync: acceptGame } = useScaffoldContractWrite({
+    contractName: "TicTacToe",
+    functionName: "acceptGame",
+    args: [BigInt(game.gameId)],
+    value: BigInt(game.bet),
+  });
 
   const handleMakeMove = async () => {
     try {
-      if (movesAmount > 0) {
-        setBetPayment(0);
-      }
       await makeMove();
-
-      // Update the local board based on the latest move
-      const currentPlayerSymbol = movesAmount % 2 === 0 ? 1 : 2;
-      const updatedBoard = [...board];
-      updatedBoard[position] = currentPlayerSymbol;
-      setBoard(updatedBoard);
     } catch (error) {
       console.error("Error making move:", error);
-      // Handle error as needed
     }
   };
 
@@ -74,13 +58,19 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           Player 2: <Address address={game.player2} />
         </p>
         <p>
-          Bet: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
+          Each player bets: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
         </p>
       </Flex>
       <Flex direction="row" justifyContent={"space-around"} gap={6}>
         <p>
           Is game accepted?: <br />
-          {isGameAccepted ? "Yes" : "No"}
+          {isGameAccepted ? (
+            "Yes"
+          ) : (
+            <Button colorScheme={"red"} onClick={() => acceptGame()}>
+              Accept game
+            </Button>
+          )}
         </p>
         <p>
           # of moves made: <br />

@@ -6,17 +6,12 @@ dApp for betting on the outcome of a Tic Tac Toe game.
 - Board (pending development by BuidlGuidl members)
 - Game idea by [freeCodeCamp Frontend Web Development Tutorial](https://www.youtube.com/watch?v=MsnQ5uepIaE)
 
-## How can I contribute?
-
-### Requirements
-
-- 🐣 Make sure you know the ETH Tech Stack and understand [how to make a dApp using Scaffold-ETH 2](https://lulox.notion.site/Newbie-s-Lounge-68ea7c4c5f1a4ec29786be6a76516878).
-
-### How to contribute:
+## How can I contribute to this build?
 
 - 👷‍♀️ To view current development tasks, [join this Trello board](https://trello.com/invite/b/s0vot1BA/ATTI366c508087a404ccf9343def4d76d1ce6F7899AA/newbies-lounge) and check the list "TicTacToe".
 - 🧰 To chat with other buidlers about this project, [join our Telegram group](https://t.me/+FwCZPG51UhwzOTZh)
 - 🛠️ To submit a PR (Pull Request), [fork and pull](https://github.com/susam/gitpr) a request to this repo.
+- 🐣 Make sure you know the ETH Tech Stack and understand [how to make a dApp using Scaffold-ETH 2](https://lulox.notion.site/Newbie-s-Lounge-68ea7c4c5f1a4ec29786be6a76516878).
 
 ## Quickstart
 
@@ -95,12 +90,12 @@ Win scenarios:
 
 Run smart contract test with `yarn hardhat:test`
 
+## About Scaffold-ETH 2
+
+See [SE2-DOCUMENTATION.md](./SE2-DOCUMENTATION.md)
+
 ### Disabling Github Workflow
 
 We have github workflow setup checkout `.github/workflows/lint.yaml` which runs types and lint error checks every time code is **pushed** to `main` branch or **pull request** is made to `main` branch
 
 To disable it, **delete `.github` directory**
-
-## About Scaffold-ETH 2
-
-See [SE2-DOCUMENTATION.md](./SE2-DOCUMENTATION.md)

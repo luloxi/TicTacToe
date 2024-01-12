@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.19;
+pragma solidity ^0.8.17;
 
 /**
  * @title TicTacToe
  * @author Lulox
  * @notice A betting TicTacToe contract.
  * @dev Currently for using with one transaction per move,
- *      in a future may be replaced with signatures
+ *      in a future may be replaced with signatures 
+        or other gas efficient mechanism
  */
 
 contract TicTacToe {
@@ -56,15 +57,6 @@ contract TicTacToe {
 	);
 
 	/* MODIFIERS */
-
-	modifier onlyPlayers(uint256 gameId) {
-		require(
-			msg.sender == games[gameId].player1 ||
-				msg.sender == games[gameId].player2,
-			"Not a player"
-		);
-		_;
-	}
 
 	modifier onlyValidMove(uint256 _gameId, uint8 position) {
 		// Store the game in memory to use less storage reads
@@ -160,6 +152,55 @@ contract TicTacToe {
 		checkWin(_gameId, position, msg.sender);
 	}
 
+	// Function to withdraw the prize based on game state
+	function withdrawPrize(uint256 _gameId) external {
+		Game storage game = games[_gameId];
+
+		// Ensure the game is in the correct state for prize withdrawal
+		require(
+			game.state == GameState.PLAYER1WON ||
+				game.state == GameState.PLAYER2WON ||
+				game.state == GameState.TIE,
+			"Invalid game state for prize withdrawal"
+		);
+
+		// Ensure the caller is one of the players or has not withdrawn yet
+		require(
+			msg.sender == game.player1 || msg.sender == game.player2,
+			"Not a player"
+		);
+
+		// Ensure the player has not withdrawn yet
+		if (msg.sender == game.player1) {
+			require(
+				game.state == GameState.PLAYER1WON,
+				"You haven't won this game!"
+			);
+			require(
+				!game.player1Withdrawn,
+				"You have already withdrawn the prize!"
+			);
+			game.player1Withdrawn = true;
+		} else {
+			require(
+				game.state == GameState.PLAYER2WON,
+				"You haven't won this game!"
+			);
+			require(
+				!game.player2Withdrawn,
+				"You have already withdrawn the prize!"
+			);
+			game.player2Withdrawn = true;
+		}
+
+		// Calculate and transfer the prize based on the game state
+		uint256 prize = calculatePrize(_gameId);
+		require(prize > 0, "Invalid prize amount");
+
+		// Transfer the prize to the player
+		payable(msg.sender).transfer(prize);
+	}
+
 	/* INTERNAL FUNCTIONS */
 
 	function checkWin(
@@ -215,13 +256,49 @@ contract TicTacToe {
 	}
 
 	function finishGame(uint256 gameId, address winner) internal {
-		// Incliude a check for state assuming the winner will be the msg.sender
-		// In the case of a tie call with address(0) as the winner, add a condition for that too
+		Game storage game = games[gameId];
 
-		// Add conditions to determine which state will the game be finished with, according to this info ^
-		// These come from the enum GameState PLAYER1WON, PLAYER2WON, TIE
-		GameState state = games[gameId].state;
-		emit GameFinished(gameId, winner, state);
+		// Ensure the game is in the PLAYING state before finishing
+		require(
+			game.state == GameState.PLAYING,
+			"Game is not in PLAYING state"
+		);
+
+		// Determine the result based on the winner and update game state accordingly
+		if (winner == address(0)) {
+			// It's a tie
+			game.state = GameState.TIE;
+		} else if (winner == game.player1) {
+			// Player 1 won
+			game.state = GameState.PLAYER1WON;
+		} else if (winner == game.player2) {
+			// Player 2 won
+			game.state = GameState.PLAYER2WON;
+		} else {
+			// Winner address is not valid
+			revert("Invalid winner address");
+		}
+
+		// Emit GameFinished event
+		emit GameFinished(gameId, winner, game.state);
+	}
+
+	// Function to calculate the prize based on the game state
+	function calculatePrize(uint256 _gameId) internal view returns (uint256) {
+		Game storage game = games[_gameId];
+		uint256 totalBet = game.bet * 2; // Total amount bet in the game
+
+		if (game.state == GameState.PLAYER1WON) {
+			return totalBet;
+		} else if (game.state == GameState.PLAYER2WON) {
+			return totalBet;
+		} else if (game.state == GameState.TIE) {
+			// In the case of a tie, split the total bet equally between players
+			return totalBet / 2;
+		} else {
+			// Invalid game state
+			revert("Invalid game state");
+		}
 	}
 
 	/* VIEW AND PURE FUNCTIONS */

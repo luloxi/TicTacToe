@@ -16,7 +16,7 @@ const CreateChallengeBox = ({}) => {
     value: betAmount ? ethers.parseEther(betAmount) : undefined,
   });
 
-  console.log("Bet amount: ", betAmount);
+  // console.log("Bet amount: ", betAmount);
 
   return (
     <Card
