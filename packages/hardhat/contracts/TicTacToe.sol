@@ -142,7 +142,7 @@ contract TicTacToe {
 		// Determine the current Player symbol
 		// 1 is player1, 2 is player2
 		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
-		// Add the corresponding mark in the position of the board
+		// Add the corresponding mark in the position of the game board
 		games[_gameId].board[position] = playerSymbol;
 		// And add 1 to the number of moves made in the game
 		games[_gameId].moves++;
