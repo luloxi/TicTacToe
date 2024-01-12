@@ -14,7 +14,7 @@ type HeaderMenuLink = {
 
 export const menuLinks: HeaderMenuLink[] = [
   {
-    label: "Home",
+    label: "Play!",
     href: "/",
   },
   {
@@ -91,8 +91,13 @@ export const Header = () => {
             <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold leading-tight">Scaffold-ETH</span>
-            <span className="text-xs">Ethereum dev stack</span>
+            <span className="font-bold leading-tight">TicTacToe</span>
+            <span className="text-xs">
+              Made with{" "}
+              <Link className={"underline"} href="https://scaffoldeth.io/">
+                Scaffold-ETH 2
+              </Link>
+            </span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">
