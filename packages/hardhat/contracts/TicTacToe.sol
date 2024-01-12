@@ -69,10 +69,18 @@ contract TicTacToe {
 	modifier onlyValidMove(uint256 _gameId, uint8 position) {
 		// Store the game in memory to use less storage reads
 		Game memory game = games[_gameId];
+		uint8 currentPlayer = getCurrentPlayer(_gameId);
+
 		// Player should be either player1 or player2, no doubt on that
 		require(
 			msg.sender == game.player1 || msg.sender == game.player2,
 			"Not a player"
+		);
+		// Verify if it's your turn or not
+		require(
+			(msg.sender == game.player1 && currentPlayer == 1) ||
+				(msg.sender == game.player2 && currentPlayer == 2),
+			"Not your turn"
 		);
 		// Position is within range of board (0 to 8, 9 in total)
 		require(position < 9, "Position not valid");
@@ -138,67 +146,71 @@ contract TicTacToe {
 	function makeMove(
 		uint256 _gameId,
 		uint8 position
-	) external payable onlyValidMove(_gameId, position) {
-		// If the game has been accepted, reject any additional payments
-		require(msg.value == 0, "Cannot send ETH with move");
+	) external onlyValidMove(_gameId, position) {
 		// Determine the current Player symbol
-		uint8 currentPlayer = games[_gameId].moves % 2 == 0 ? 1 : 2;
+		// 1 is player1, 2 is player2
+		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
 		// Add the corresponding mark in the position of the board
-		games[_gameId].board[position] = currentPlayer;
+		games[_gameId].board[position] = playerSymbol;
 		// And add 1 to the number of moves made in the game
 		games[_gameId].moves++;
+
 		emit MoveMade(_gameId, msg.sender, position);
 		// Check if after adding that symbol, a win is achieved, and react to it if that's the case
-		checkWin(_gameId, position, currentPlayer, msg.sender);
+		checkWin(_gameId, position, msg.sender);
 	}
 
 	/* INTERNAL FUNCTIONS */
 
 	function checkWin(
-		uint256 gameId,
-		uint8 position,
-		uint8 playerSymbol,
-		address player
+		uint256 _gameId,
+		uint8 _position,
+		address _player
 	) internal {
+		// Store the game in memory to use less storage reads
+		Game memory game = games[_gameId];
 		// Check if board is complete and a tie should be declared
 		// If all moves were used and no victory was gotten
-		if (games[gameId].moves == 9) {
+		if (game.moves == 9) {
 			// Set the game as a Tie and finish it so prizes can be withdrawn
-			finishGame(gameId, address(0));
+			finishGame(_gameId, address(0));
 		}
 
-		uint8 row = position / 3;
-		uint8 col = position % 3;
+		// Get current player symbol
+		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 2 : 1; // Order is reverted because a moves++ is triggered before calling this internal function.
+
+		uint8 row = _position / 3;
+		uint8 col = _position % 3;
 
 		// Check row
 		if (
-			games[gameId].board[row * 3] == playerSymbol &&
-			games[gameId].board[row * 3 + 1] == playerSymbol &&
-			games[gameId].board[row * 3 + 2] == playerSymbol
+			game.board[row * 3] == playerSymbol &&
+			game.board[row * 3 + 1] == playerSymbol &&
+			game.board[row * 3 + 2] == playerSymbol
 		) {
-			finishGame(gameId, player);
+			finishGame(_gameId, _player);
 		}
 
 		// Check column
 		if (
-			games[gameId].board[col] == playerSymbol &&
-			games[gameId].board[col + 3] == playerSymbol &&
-			games[gameId].board[col + 6] == playerSymbol
+			game.board[col] == playerSymbol &&
+			game.board[col + 3] == playerSymbol &&
+			game.board[col + 6] == playerSymbol
 		) {
-			finishGame(gameId, player);
+			finishGame(_gameId, _player);
 		}
 
 		// Check diagonals
 		if (
 			(row == col || row + col == 2) &&
-			((games[gameId].board[0] == playerSymbol &&
-				games[gameId].board[4] == playerSymbol &&
-				games[gameId].board[8] == playerSymbol) ||
-				(games[gameId].board[2] == playerSymbol &&
-					games[gameId].board[4] == playerSymbol &&
-					games[gameId].board[6] == playerSymbol))
+			((game.board[0] == playerSymbol &&
+				game.board[4] == playerSymbol &&
+				game.board[8] == playerSymbol) ||
+				(game.board[2] == playerSymbol &&
+					game.board[4] == playerSymbol &&
+					game.board[6] == playerSymbol))
 		) {
-			finishGame(gameId, player);
+			finishGame(_gameId, _player);
 		}
 	}
 
@@ -214,7 +226,7 @@ contract TicTacToe {
 
 	/* VIEW AND PURE FUNCTIONS */
 
-	function getCurrentPlayer(uint256 _gameId) public view returns (uint256) {
+	function getCurrentPlayer(uint256 _gameId) public view returns (uint8) {
 		return games[_gameId].moves % 2 == 0 ? 1 : 2;
 	}
 
