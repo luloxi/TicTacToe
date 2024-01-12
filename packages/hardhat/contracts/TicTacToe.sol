@@ -307,6 +307,10 @@ contract TicTacToe {
 		return games[_gameId].moves % 2 == 0 ? 1 : 2;
 	}
 
+	function getNumberOfMoves(uint256 _gameId) public view returns (uint8) {
+		return games[_gameId].moves;
+	}
+
 	function getBoard(uint256 _gameId) external view returns (uint8[9] memory) {
 		return games[_gameId].board;
 	}

@@ -26,7 +26,5 @@ export type GameFinishedProps = {
 export type TicTacToeBoardProps = {
   game: GameCreatedProps;
   isGameAccepted: boolean;
-  movesList: MoveMadeProps[];
-  movesAmount: number;
   isGameFinished: boolean;
 };

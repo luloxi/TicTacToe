@@ -92,12 +92,7 @@ export const Header = () => {
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight">TicTacToe</span>
-            <span className="text-xs">
-              Made with{" "}
-              <Link className={"underline"} href="https://scaffoldeth.io/">
-                Scaffold-ETH 2
-              </Link>
-            </span>
+            <span className="text-xs">Made with Scaffold-ETH 2</span>
           </div>
         </Link>
         <ul className="hidden lg:flex lg:flex-nowrap menu menu-horizontal px-1 gap-2">

@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
-import { GameAcceptedProps, GameCreatedProps, GameFinishedProps, MoveMadeProps } from "../types/TicTacToeTypes";
+import { GameAcceptedProps, GameCreatedProps, GameFinishedProps } from "../types/TicTacToeTypes";
 import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { MetaHeader } from "~~/components/MetaHeader";
 import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
 import TicTacToeBoard from "~~/components/tictactoe/TicTacToeBoard";
-import { useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
+import { useScaffoldContractRead, useScaffoldEventHistory, useScaffoldEventSubscriber } from "~~/hooks/scaffold-eth";
 
 const Home: NextPage = () => {
   const [gameHistory, setGameHistory] = useState<GameCreatedProps[]>([]);
   const [gameAcceptedHistory, setGameAcceptedHistory] = useState<GameAcceptedProps[]>([]);
-  const [moveMadeHistory, setMoveMadeHistory] = useState<MoveMadeProps[]>([]);
   const [gameFinishedHistory, setGameFinishedHistory] = useState<GameFinishedProps[]>([]);
+
+  const { data: gameIdCounter } = useScaffoldContractRead({
+    contractName: "TicTacToe",
+    functionName: "gameIdCounter",
+    args: undefined,
+  });
+
+  console.log("gameIdCounter: ", gameIdCounter);
 
   // Event history hooks
   const { data: GameCreatedHistory } = useScaffoldEventHistory({
@@ -24,13 +31,6 @@ const Home: NextPage = () => {
   const { data: GameAcceptedHistory } = useScaffoldEventHistory({
     contractName: "TicTacToe",
     eventName: "GameAccepted",
-    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
-    blockData: false,
-  });
-
-  const { data: MoveMadeHistory } = useScaffoldEventHistory({
-    contractName: "TicTacToe",
-    eventName: "MoveMade",
     fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
     blockData: false,
   });
@@ -61,15 +61,6 @@ const Home: NextPage = () => {
     })) as GameAcceptedProps[];
     setGameAcceptedHistory(mappedHistory);
   }, [GameAcceptedHistory]);
-
-  useEffect(() => {
-    const mappedHistory = MoveMadeHistory?.map(event => ({
-      gameId: parseInt(event.args[0].toString()),
-      player: event.args[1],
-      position: parseInt(event.args[2].toString()),
-    })) as MoveMadeProps[];
-    setMoveMadeHistory(mappedHistory);
-  }, [MoveMadeHistory]);
 
   useEffect(() => {
     const mappedHistory = GameFinishedHistory?.map(event => ({
@@ -124,21 +115,6 @@ const Home: NextPage = () => {
 
   useScaffoldEventSubscriber({
     contractName: "TicTacToe",
-    eventName: "MoveMade",
-    listener: (logs: any[]) => {
-      setMoveMadeHistory(indexedHistory => {
-        const newMoveMade: MoveMadeProps = {
-          gameId: parseInt(logs[0].args[0].toString()),
-          player: logs[0].args[1],
-          position: parseInt(logs[0].args[2].toString()),
-        };
-        return [newMoveMade, ...indexedHistory];
-      });
-    },
-  });
-
-  useScaffoldEventSubscriber({
-    contractName: "TicTacToe",
     eventName: "GameFinished",
     listener: (logs: any[]) => {
       setGameFinishedHistory(indexedHistory => {
@@ -154,11 +130,9 @@ const Home: NextPage = () => {
 
   const gameCards = gameHistory?.map(game => {
     const isGameAccepted = gameAcceptedHistory.some(acceptedGame => acceptedGame.gameId === game.gameId);
-    const movesList = moveMadeHistory.filter(move => move.gameId === game.gameId);
-    const movesAmount = movesList.length;
     const isGameFinished = gameFinishedHistory.some(finishedGame => finishedGame.gameId === game.gameId);
 
-    return { game, isGameAccepted, movesList, movesAmount, isGameFinished };
+    return { game, isGameAccepted, isGameFinished };
   });
 
   return (
@@ -184,14 +158,14 @@ const Home: NextPage = () => {
             filter: "brightness(0.3)",
           }}
         />
-        <Flex direction={{ base: "column", md: "row" }} justify="center" gap={10} align="center" marginTop={4}>
+        <Flex direction={{ base: "column", md: "row" }} justify="space-around" gap={10} align="center" marginTop={4}>
           <CreateChallengeBox />
           <Card
             direction={{ base: "column", sm: "row" }}
             width="container.sm"
             maxWidth={{ base: "container.sm", sm: "container.sm", md: "container.md" }}
             variant="solid"
-            maxHeight={{ base: "container.sm", sm: "container.sm", md: "480" }}
+            maxHeight={{ base: "container.md", sm: "container.sm", md: "720" }}
             overflow={"auto"}
             textColor={"white"}
             backgroundColor={"gray.900"}
@@ -199,13 +173,11 @@ const Home: NextPage = () => {
             <CardBody>
               <Heading size="xl">⭕ See your active challenges! ❌</Heading>
               <Flex direction="column" alignItems="center" justifyContent="center">
-                {gameCards?.map(({ game, isGameAccepted, movesList, movesAmount, isGameFinished }) => (
+                {gameCards?.map(({ game, isGameAccepted, isGameFinished }) => (
                   <TicTacToeBoard
                     key={game.gameId}
                     game={game}
                     isGameAccepted={isGameAccepted}
-                    movesList={movesList}
-                    movesAmount={movesAmount}
                     isGameFinished={isGameFinished}
                   />
                 ))}
