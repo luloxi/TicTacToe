@@ -158,14 +158,14 @@ const Home: NextPage = () => {
             filter: "brightness(0.3)",
           }}
         />
-        <Flex direction={{ base: "column", md: "row" }} justify="space-around" gap={10} align="center" marginTop={4}>
+        <Flex direction={{ base: "column", md: "row" }} justify="center" gap={10} align="center" marginTop={4}>
           <CreateChallengeBox />
           <Card
             direction={{ base: "column", sm: "row" }}
             width="container.sm"
             maxWidth={{ base: "container.sm", sm: "container.sm", md: "container.md" }}
             variant="solid"
-            maxHeight={{ base: "container.md", sm: "container.sm", md: "720" }}
+            maxHeight={{ base: "240", sm: "240", md: "480", lg: "720" }}
             overflow={"auto"}
             textColor={"white"}
             backgroundColor={"gray.900"}

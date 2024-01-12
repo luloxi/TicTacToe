@@ -15,14 +15,13 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
     args: [BigInt(game.gameId)],
   });
 
-  const { data: numberOfMoves } = useScaffoldContractRead({
-    contractName: "TicTacToe",
-    functionName: "getNumberOfMoves",
-    args: [BigInt(game.gameId)],
-  });
+  // const { data: numberOfMoves } = useScaffoldContractRead({
+  //   contractName: "TicTacToe",
+  //   functionName: "getNumberOfMoves",
+  //   args: [BigInt(game.gameId)],
+  // });
 
   console.log("boardFromContract: ", boardFromContract);
-  console.log("numberOfMoves: ", numberOfMoves);
 
   useEffect(() => {
     // Update the local board based on the latest data from the contract
@@ -60,13 +59,9 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
           <strong> {game.gameId}</strong>
         </Box>
       </Flex>
-      <Flex direction="row" justifyContent={"space-around"} textAlign={"center"} gap={6} padding={3}>
-        <Box>
-          Player 1: <Address address={game.player1} />
-        </Box>
-        <Box>
-          Player 2: <Address address={game.player2} />
-        </Box>
+      <Flex direction="row" justifyContent={"center"} textAlign={"center"} gap={6} padding={3}>
+        <Address address={game.player1} /> {isGameAccepted ? "is playing against" : "has challenged"}{" "}
+        <Address address={game.player2} />
       </Flex>
       {isGameAccepted ? (
         ""
@@ -75,17 +70,17 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
           direction="row"
           alignItems={"center"}
           textAlign={"center"}
-          justifyContent={"space-around"}
+          justifyContent={"center"}
           gap={6}
           paddingBottom={3}
         >
           <Box>
+            Each player bets: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
+          </Box>
+          <Box>
             <Button colorScheme={"green"} onClick={() => acceptGame()}>
               Accept game
             </Button>
-          </Box>
-          <Box>
-            Each player bets: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
           </Box>
         </Flex>
       )}
@@ -101,10 +96,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
           <Box>
             Each player betted: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
           </Box>
-          <Box>
-            # of moves made: <br />
-            {numberOfMoves}
-          </Box>
+
           <Box>
             Game state: <br />
             {isGameFinished ? "Finished" : "Not finished"}
