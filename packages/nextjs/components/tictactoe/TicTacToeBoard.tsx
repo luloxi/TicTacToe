@@ -5,8 +5,13 @@ import { ethers } from "ethers";
 import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { TicTacToeBoardProps } from "~~/types/TicTacToeTypes";
 
-const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, isGameFinished }) => {
-  const [position, setPosition] = useState<number>(0);
+const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
+  game,
+  isGameAccepted,
+  isGameFinished,
+  currentPlayer,
+  // movesMade,
+}) => {
   const [board, setBoard] = useState<number[]>(Array(9).fill(0)); // Initialize an empty board
 
   const { data: boardFromContract } = useScaffoldContractRead({
@@ -15,16 +20,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
     args: [BigInt(game.gameId)],
   });
 
-  // const { data: numberOfMoves } = useScaffoldContractRead({
-  //   contractName: "TicTacToe",
-  //   functionName: "getNumberOfMoves",
-  //   args: [BigInt(game.gameId)],
-  // });
-
-  console.log("boardFromContract: ", boardFromContract);
-
   useEffect(() => {
-    // Update the local board based on the latest data from the contract
     if (boardFromContract) {
       setBoard(boardFromContract.map(Number));
     }
@@ -33,7 +29,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
   const { writeAsync: makeMove } = useScaffoldContractWrite({
     contractName: "TicTacToe",
     functionName: "makeMove",
-    args: [BigInt(game.gameId), position],
+    args: [BigInt(game.gameId), 0],
   });
 
   const { writeAsync: acceptGame } = useScaffoldContractWrite({
@@ -42,14 +38,6 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
     args: [BigInt(game.gameId)],
     value: BigInt(game.bet),
   });
-
-  const handleMakeMove = async () => {
-    try {
-      await makeMove();
-    } catch (error) {
-      console.error("Error making move:", error);
-    }
-  };
 
   return (
     <Box key={game.gameId}>
@@ -60,8 +48,11 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
         </Box>
       </Flex>
       <Flex direction="row" justifyContent={"center"} textAlign={"center"} gap={6} padding={3}>
-        <Address address={game.player1} /> {isGameAccepted ? "is playing against" : "has challenged"}{" "}
-        <Address address={game.player2} />
+        <Address address={game.player1} />{" "}
+        {isGameAccepted ? (isGameFinished ? "played against" : "is playing against") : "challenged"}
+        <>
+          <Address address={game.player2} />
+        </>
       </Flex>
       {isGameAccepted ? (
         ""
@@ -75,12 +66,17 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
           paddingBottom={3}
         >
           <Box>
-            Each player bets: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
+            Each player bets: <br />{" "}
+            <strong>{parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH</strong>
           </Box>
           <Box>
-            <Button colorScheme={"green"} onClick={() => acceptGame()}>
-              Accept game
-            </Button>
+            {game.player2 === currentPlayer ? (
+              <Button colorScheme={"green"} onClick={() => acceptGame()}>
+                Accept game
+              </Button>
+            ) : (
+              ""
+            )}
           </Box>
         </Flex>
       )}
@@ -94,12 +90,13 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
           paddingBottom={3}
         >
           <Box>
-            Each player betted: <br /> {parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH
+            Each player betted: <br />{" "}
+            <strong>{parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH</strong>
           </Box>
 
           <Box>
             Game state: <br />
-            {isGameFinished ? "Finished" : "Not finished"}
+            {isGameFinished ? <strong>Finished</strong> : <strong>Not finished</strong>}
           </Box>
         </Flex>
       ) : (
@@ -107,7 +104,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
       )}
       {/* Render the Tic Tac Toe board here */}
       {isGameAccepted ? (
-        <Grid templateColumns="repeat(3, 1fr)" gap={2}>
+        <Grid templateColumns="repeat(3, 1fr)" justifyItems={"center"} gap={2}>
           {board.map((cell, index) => (
             <Button
               key={index}
@@ -119,10 +116,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({ game, isGameAccepted, i
               height={70}
               disabled={cell !== 0 || !isGameAccepted || isGameFinished}
               onClick={() => {
-                if (!isGameFinished) {
-                  setPosition(index);
-                  handleMakeMove();
-                }
+                makeMove({ args: [BigInt(game.gameId), index] });
               }}
             >
               {cell === 1 ? "✖️" : cell === 2 ? "⭕" : ""}

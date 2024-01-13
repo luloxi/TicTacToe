@@ -25,6 +25,8 @@ export type GameFinishedProps = {
 
 export type TicTacToeBoardProps = {
   game: GameCreatedProps;
-  isGameAccepted: boolean;
-  isGameFinished: boolean;
+  isGameAccepted?: boolean;
+  isGameFinished?: boolean;
+  currentPlayer?: string;
+  movesMade?: any;
 };
