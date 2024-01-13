@@ -164,33 +164,33 @@ contract TicTacToe {
 			"Invalid game state for prize withdrawal"
 		);
 
-		// Ensure the caller is one of the players or has not withdrawn yet
-		require(
-			msg.sender == game.player1 || msg.sender == game.player2,
-			"Not a player"
-		);
-
-		// Ensure the player has not withdrawn yet
-		if (msg.sender == game.player1) {
-			require(
-				game.state == GameState.PLAYER1WON,
-				"You haven't won this game!"
-			);
+		// WITHDRAW RULES FOR PLAYER 1 VICTORY
+		if (game.state == GameState.PLAYER1WON && msg.sender == game.player1) {
 			require(
 				!game.player1Withdrawn,
 				"You have already withdrawn the prize!"
 			);
 			game.player1Withdrawn = true;
-		} else {
-			require(
-				game.state == GameState.PLAYER2WON,
-				"You haven't won this game!"
-			);
+		} 
+
+		// WITHDRAW RULES FOR PLAYER 2 VICTORY
+		if (game.state == GameState.PLAYER2WON && msg.sender == game.player2) {
 			require(
 				!game.player2Withdrawn,
 				"You have already withdrawn the prize!"
 			);
 			game.player2Withdrawn = true;
+		} 
+
+		// WITHDRAW RULES FOR TIE RESULT
+		if (game.state == GameState.TIE) {
+			if (msg.sender == game.player1) {
+				require(!game.player1Withdrawn,"You have already withdrawn the prize!");
+				game.player1Withdrawn = true;
+			} else if (msg.sender == game.player2) {
+				require(!game.player2Withdrawn,	"You have already withdrawn the prize!");
+				game.player2Withdrawn = true;
+				}
 		}
 
 		// Calculate and transfer the prize based on the game state

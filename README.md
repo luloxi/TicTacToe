@@ -2,10 +2,6 @@
 
 dApp for betting on the outcome of a Tic Tac Toe game.
 
-- Frontend inspired by [Sportsbook](https://github.com/luloxi/sportsbook)
-- Board (pending development by BuidlGuidl members)
-- Game idea by [freeCodeCamp Frontend Web Development Tutorial](https://www.youtube.com/watch?v=MsnQ5uepIaE)
-
 ## How can I contribute to this build?
 
 - 👷‍♀️ To view current development tasks, [join this Trello board](https://trello.com/invite/b/s0vot1BA/ATTI366c508087a404ccf9343def4d76d1ce6F7899AA/newbies-lounge) and check the list "TicTacToe".

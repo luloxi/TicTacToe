@@ -64,7 +64,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   });
 
   return (
-    <Box key={game.gameId}>
+    <Box key={game.gameId} marginY={6}>
       <Flex fontSize={24} textColor={"red"} alignItems={"center"} justifyContent={"center"} paddingTop={3}>
         Game Id #
         <Box fontSize={36} textColor={"white"}>
@@ -122,7 +122,9 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                 Game has finished
                 <br />
                 {(gameState == 2 && currentPlayer == game.player1 && !player1WithdrawnPrize) ||
-                (gameState == 3 && currentPlayer == game.player2 && !player2WithdrawnPrize) ? (
+                (gameState == 3 && currentPlayer == game.player2 && !player2WithdrawnPrize) ||
+                (gameState == 4 && currentPlayer == game.player1 && !player2WithdrawnPrize) ||
+                (gameState == 4 && currentPlayer == game.player2 && !player2WithdrawnPrize) ? (
                   <Button colorScheme={"green"} onClick={() => withdrawPrize()}>
                     Withdraw Prize
                   </Button>
@@ -130,6 +132,10 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                   ""
                 )}
               </strong>
+            ) : currentPlayer == game.player1 ? (
+              <strong>You&apos;re player ❌</strong>
+            ) : currentPlayer == game.player2 ? (
+              <strong>You&apos;re player ⭕</strong>
             ) : (
               <strong>Game in progress</strong>
             )}
@@ -140,7 +146,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
       )}
       {/* Render the Tic Tac Toe board here */}
       {isGameAccepted ? (
-        <Grid templateColumns="repeat(3, 1fr)" justifyItems={"center"} gap={2}>
+        <Grid templateColumns="repeat(3, 1fr)" justifyItems={"center"} marginX="7rem" gap={3}>
           {board.map((cell, index) => (
             <Button
               key={index}

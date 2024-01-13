@@ -1,4 +1,4 @@
-import { Card, CardBody, Flex, Heading } from "@chakra-ui/react";
+import { Card, CardBody, Flex } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
@@ -80,7 +80,7 @@ const Home: NextPage = () => {
             backgroundColor={"gray.900"}
           >
             <CardBody>
-              <Heading size="xl">⭕ See your active challenges! ❌</Heading>
+              {/* <Heading size="xl">⭕ See your active challenges! ❌</Heading> */}
               <Flex direction="column" alignItems="center" justifyContent="center">
                 {gameCards?.map(({ game, isGameAccepted, isGameFinished, movesMade }) => (
                   <TicTacToeBoard
