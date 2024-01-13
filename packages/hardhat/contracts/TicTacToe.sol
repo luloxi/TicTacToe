@@ -314,4 +314,16 @@ contract TicTacToe {
 	function getBoard(uint256 _gameId) external view returns (uint8[9] memory) {
 		return games[_gameId].board;
 	}
+
+	function getGameState(uint256 _gameId) public view returns (GameState)  {
+		return games[_gameId].state;
+	}
+
+	function hasPlayer1WithdrawnPrize(uint256 _gameId) public view returns(bool) {
+		return games[_gameId].player1Withdrawn;
+	}
+
+	function hasPlayer2WithdrawnPrize(uint256 _gameId) public view returns(bool) {
+		return games[_gameId].player2Withdrawn;
+	}
 }

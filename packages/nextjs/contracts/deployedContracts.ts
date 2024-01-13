@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     TicTacToe: {
-      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      address: "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
       abi: [
         {
           anonymous: false,
@@ -249,12 +249,69 @@ const deployedContracts = {
               type: "uint256",
             },
           ],
+          name: "getGameState",
+          outputs: [
+            {
+              internalType: "enum TicTacToe.GameState",
+              name: "",
+              type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
           name: "getNumberOfMoves",
           outputs: [
             {
               internalType: "uint8",
               name: "",
               type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "hasPlayer1WithdrawnPrize",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "hasPlayer2WithdrawnPrize",
+          outputs: [
+            {
+              internalType: "bool",
+              name: "",
+              type: "bool",
             },
           ],
           stateMutability: "view",

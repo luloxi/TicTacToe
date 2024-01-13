@@ -26,6 +26,24 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     }
   }, [boardFromContract]);
 
+  const { data: gameState } = useScaffoldContractRead({
+    contractName: "TicTacToe",
+    functionName: "getGameState",
+    args: [BigInt(game.gameId)],
+  });
+
+  const { data: player1WithdrawnPrize } = useScaffoldContractRead({
+    contractName: "TicTacToe",
+    functionName: "hasPlayer1WithdrawnPrize",
+    args: [BigInt(game.gameId)],
+  });
+
+  const { data: player2WithdrawnPrize } = useScaffoldContractRead({
+    contractName: "TicTacToe",
+    functionName: "hasPlayer2WithdrawnPrize",
+    args: [BigInt(game.gameId)],
+  });
+
   const { writeAsync: makeMove } = useScaffoldContractWrite({
     contractName: "TicTacToe",
     functionName: "makeMove",
@@ -39,6 +57,12 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     value: BigInt(game.bet),
   });
 
+  const { writeAsync: withdrawPrize } = useScaffoldContractWrite({
+    contractName: "TicTacToe",
+    functionName: "withdrawPrize",
+    args: [BigInt(game.gameId)],
+  });
+
   return (
     <Box key={game.gameId}>
       <Flex fontSize={24} textColor={"red"} alignItems={"center"} justifyContent={"center"} paddingTop={3}>
@@ -50,9 +74,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
       <Flex direction="row" justifyContent={"center"} textAlign={"center"} gap={6} padding={3}>
         <Address address={game.player1} />{" "}
         {isGameAccepted ? (isGameFinished ? "played against" : "is playing against") : "challenged"}
-        <>
-          <Address address={game.player2} />
-        </>
+        <Address address={game.player2} />
       </Flex>
       {isGameAccepted ? (
         ""
@@ -95,8 +117,22 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           </Box>
 
           <Box>
-            Game state: <br />
-            {isGameFinished ? <strong>Finished</strong> : <strong>Not finished</strong>}
+            {isGameFinished ? (
+              <strong>
+                Game has finished
+                <br />
+                {(gameState == 2 && currentPlayer == game.player1 && !player1WithdrawnPrize) ||
+                (gameState == 3 && currentPlayer == game.player2 && !player2WithdrawnPrize) ? (
+                  <Button colorScheme={"green"} onClick={() => withdrawPrize()}>
+                    Withdraw Prize
+                  </Button>
+                ) : (
+                  ""
+                )}
+              </strong>
+            ) : (
+              <strong>Game in progress</strong>
+            )}
           </Box>
         </Flex>
       ) : (
