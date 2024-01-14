@@ -1,8 +1,8 @@
 import React from "react";
 import { useState } from "react";
-import { Button, Card, CardBody, Heading, Stack, Text } from "@chakra-ui/react";
+import { Box, Button, Card, CardBody, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { ethers } from "ethers";
-import { AddressInput, EtherInput } from "~~/components/scaffold-eth";
+import { AddressInput, Balance, EtherInput } from "~~/components/scaffold-eth";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 const CreateChallengeBox = ({}) => {
@@ -40,6 +40,13 @@ const CreateChallengeBox = ({}) => {
             onChange={setPlayer2Address}
             value={player2Address ?? ""}
           />
+          {player2Address ? (
+            <Flex justifyContent={"center"} alignItems={"center"} direction={"row"} marginTop={2}>
+              This address has <Balance address={player2Address} /> available to bet
+            </Flex>
+          ) : (
+            <Box marginY={2}>Enter an address to view their Balance!</Box>
+          )}
           <br />
           <Text fontWeight={"bold"} marginBottom={0} marginTop={0}>
             💰 (optional) Bet ETH on the match outcome 💰
