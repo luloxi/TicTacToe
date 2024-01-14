@@ -123,7 +123,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                 <br />
                 {(gameState == 2 && currentPlayer == game.player1 && !player1WithdrawnPrize) ||
                 (gameState == 3 && currentPlayer == game.player2 && !player2WithdrawnPrize) ||
-                (gameState == 4 && currentPlayer == game.player1 && !player2WithdrawnPrize) ||
+                (gameState == 4 && currentPlayer == game.player1 && !player1WithdrawnPrize) ||
                 (gameState == 4 && currentPlayer == game.player2 && !player2WithdrawnPrize) ? (
                   <Button colorScheme={"green"} onClick={() => withdrawPrize()}>
                     Withdraw Prize
