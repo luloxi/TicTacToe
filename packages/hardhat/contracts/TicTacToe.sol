@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
+import "hardhat/console.sol";
 
 /**
  * @title TicTacToe
@@ -12,6 +13,7 @@ pragma solidity ^0.8.17;
 
 contract TicTacToe {
 	uint256 public gameIdCounter = 0;
+    uint256 public immutable timeOutValue = 10 seconds;
 
 	enum GameState {
 		PENDING,
@@ -30,6 +32,7 @@ contract TicTacToe {
 		bool player2Withdrawn;
 		uint8[9] board; // 0 (no player): empty, 1 (player 1): X, 2 (player 2): O
 		uint8 moves; // Counter or the number of moves made
+        uint256 lastTimePlayed;
 	}
 
 	mapping(uint256 => Game) public games;
@@ -110,7 +113,8 @@ contract TicTacToe {
 			player1Withdrawn: false,
 			player2Withdrawn: false,
 			board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
-			moves: 0
+			moves: 0,
+            lastTimePlayed : 0
 		});
 
 		// This event can be used by the frontend to know that something happened and react to it
@@ -129,6 +133,8 @@ contract TicTacToe {
 			game.bet == msg.value,
 			"You haven't sent the required ETH to accept"
 		);
+        // Set the initial time count to check the timeout
+        games[_gameId].lastTimePlayed = block.timestamp;
 
 		// Set the game state to PLAYING and emit an event
 		games[_gameId].state = GameState.PLAYING;
@@ -142,12 +148,19 @@ contract TicTacToe {
 		// Determine the current Player symbol
 		// 1 is player1, 2 is player2
 		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
-		// Add the corresponding mark in the position of the game board
-		games[_gameId].board[position] = playerSymbol;
-		// And add 1 to the number of moves made in the game
-		games[_gameId].moves++;
+        // Check if the current player exceeds time and lose
+        if (block.timestamp - games[_gameId].lastTimePlayed > timeOutValue) {
+            finishGame(_gameId, playerSymbol == 1 ? games[_gameId].player2 : games[_gameId].player1);
+        }
+        else {
+            // Add the corresponding mark in the position of the game board
+            games[_gameId].board[position] = playerSymbol;
+            // And add 1 to the number of moves made in the game
+            games[_gameId].moves++;
+            games[_gameId].lastTimePlayed = block.timestamp;
 
-		emit MoveMade(_gameId, msg.sender, position);
+            emit MoveMade(_gameId, msg.sender, position);
+        }
 		// Check if after adding that symbol, a win is achieved, and react to it if that's the case
 		checkWin(_gameId, position, msg.sender);
 	}
