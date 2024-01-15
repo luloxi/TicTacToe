@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     TicTacToe: {
-      address: "0xB7f8BC63BbcaD18155201308C8f3540b07f84F5e",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           anonymous: false,
@@ -63,6 +63,25 @@ const deployedContracts = {
             },
           ],
           name: "GameCreated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "gameId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "player1",
+              type: "address",
+            },
+          ],
+          name: "GameDeleted",
           type: "event",
         },
         {
@@ -142,6 +161,19 @@ const deployedContracts = {
           type: "function",
         },
         {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "deleteGame",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
           inputs: [],
           name: "gameIdCounter",
           outputs: [
@@ -198,6 +230,11 @@ const deployedContracts = {
               internalType: "uint8",
               name: "moves",
               type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "lastTimePlayed",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -331,6 +368,32 @@ const deployedContracts = {
             },
           ],
           name: "makeMove",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "timeOutValue",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "winByTimeout",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
