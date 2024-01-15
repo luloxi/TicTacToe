@@ -89,9 +89,3 @@ Run smart contract test with `yarn hardhat:test`
 ## About Scaffold-ETH 2
 
 See [SE2-DOCUMENTATION.md](./SE2-DOCUMENTATION.md)
-
-### Disabling Github Workflow
-
-We have github workflow setup checkout `.github/workflows/lint.yaml` which runs types and lint error checks every time code is **pushed** to `main` branch or **pull request** is made to `main` branch
-
-To disable it, **delete `.github` directory**
