@@ -9,10 +9,12 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   game,
   isGameAccepted,
   isGameFinished,
+  isGameDeleted,
   currentPlayer,
   // movesMade,
 }) => {
   const [board, setBoard] = useState<number[]>(Array(9).fill(0)); // Initialize an empty board
+  // const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   const { data: boardFromContract } = useScaffoldContractRead({
     contractName: "TicTacToe",
@@ -44,6 +46,37 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     args: [BigInt(game.gameId)],
   });
 
+  // const { data: lastTimePlayed } = useScaffoldContractRead({
+  //   contractName: "TicTacToe",
+  //   functionName: "getLastTimePlayed",
+  //   args: [BigInt(game.gameId)],
+  // });
+
+  // useEffect(() => {
+  //   let deadline: number;
+
+  //   if (lastTimePlayed) {
+  //     deadline = parseInt(lastTimePlayed.toString(), 10);
+  //   }
+
+  //   const timer = setInterval(() => {
+  //     const now = Math.floor(new Date().getTime() / 1000);
+
+  //     if (now >= deadline) {
+  //       setTimeRemaining("Deadline has passed");
+  //       clearInterval(timer);
+  //     } else {
+  //       const timeRemainingSeconds = deadline - now;
+  //       const hours = Math.floor(timeRemainingSeconds / 3600);
+  //       const minutes = Math.floor((timeRemainingSeconds % 3600) / 60);
+  //       const seconds = Math.floor(timeRemainingSeconds % 60);
+  //       setTimeRemaining(`${hours}:${minutes}:${seconds}`);
+  //     }
+  //   }, 1000);
+
+  //   return () => clearInterval(timer);
+  // }, [lastTimePlayed]);
+
   const { writeAsync: makeMove } = useScaffoldContractWrite({
     contractName: "TicTacToe",
     functionName: "makeMove",
@@ -56,6 +89,18 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
     args: [BigInt(game.gameId)],
     value: BigInt(game.bet),
   });
+
+  const { writeAsync: deleteGame } = useScaffoldContractWrite({
+    contractName: "TicTacToe",
+    functionName: "deleteGame",
+    args: [BigInt(game.gameId)],
+  });
+
+  // const { writeAsync: winByTimeout } = useScaffoldContractWrite({
+  //   contractName: "TicTacToe",
+  //   functionName: "winByTimeout",
+  //   args: [BigInt(game.gameId)],
+  // });
 
   const { writeAsync: withdrawPrize } = useScaffoldContractWrite({
     contractName: "TicTacToe",
@@ -76,8 +121,19 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
         {isGameAccepted ? (isGameFinished ? "played against" : "is playing against") : "challenged"}
         <Address address={game.player2} />
       </Flex>
+      {/* {isGameAccepted ? (
+        <Box alignItems={"center"} textAlign={"center"} justifyContent={"center"} textColor={"red"}>
+          {timeRemaining}
+        </Box>
+      ) : (
+        ""
+      )} */}
       {isGameAccepted ? (
         ""
+      ) : isGameDeleted ? (
+        <Box alignItems={"center"} textAlign={"center"} justifyContent={"center"} textColor={"red"}>
+          Game was deleted
+        </Box>
       ) : (
         <Flex
           direction="row"
@@ -96,6 +152,13 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
               <Button colorScheme={"green"} onClick={() => acceptGame()}>
                 Accept game
               </Button>
+            ) : game.player1 === currentPlayer ? (
+              <>
+                <Button colorScheme={"red"} onClick={() => deleteGame()}>
+                  Delete game
+                </Button>
+                <Box>Recover your betted amount (if any)</Box>
+              </>
             ) : (
               ""
             )}

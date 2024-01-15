@@ -23,6 +23,13 @@ const Home: NextPage = () => {
     watch: true,
   });
 
+  const { data: GameDeletedHistory } = useScaffoldEventHistory({
+    contractName: "TicTacToe",
+    eventName: "GameDeleted",
+    fromBlock: BigInt(process.env.NEXT_PUBLIC_DEPLOY_BLOCK || "0"),
+    watch: true,
+  });
+
   const { data: GameFinishedHistory } = useScaffoldEventHistory({
     contractName: "TicTacToe",
     eventName: "GameFinished",
@@ -40,8 +47,9 @@ const Home: NextPage = () => {
   const gameCards = GameCreatedHistory?.map(game => {
     const isGameAccepted = GameAcceptedHistory?.some(acceptedGame => acceptedGame.args[0] === game.args[0]);
     const isGameFinished = GameFinishedHistory?.some(finishedGame => finishedGame.args[0] === game.args[0]);
+    const isGameDeleted = GameDeletedHistory?.some(deletedGame => deletedGame.args[0] === game.args[0]);
     const movesMade = MoveMadeHistory?.filter(moveMade => moveMade.args[0] == game.args[0]);
-    return { game, isGameAccepted, isGameFinished, movesMade };
+    return { game, isGameAccepted, isGameFinished, isGameDeleted, movesMade };
   });
 
   return (
@@ -82,7 +90,7 @@ const Home: NextPage = () => {
             <CardBody>
               {/* <Heading size="xl">⭕ See your active challenges! ❌</Heading> */}
               <Flex direction="column" alignItems="center" justifyContent="center">
-                {gameCards?.map(({ game, isGameAccepted, isGameFinished, movesMade }) => (
+                {gameCards?.map(({ game, isGameAccepted, isGameFinished, isGameDeleted, movesMade }) => (
                   <TicTacToeBoard
                     key={game.args[0]}
                     game={{
@@ -93,6 +101,7 @@ const Home: NextPage = () => {
                     }}
                     isGameAccepted={isGameAccepted}
                     isGameFinished={isGameFinished}
+                    isGameDeleted={isGameDeleted}
                     currentPlayer={connectedAddress}
                     movesMade={movesMade}
                   />

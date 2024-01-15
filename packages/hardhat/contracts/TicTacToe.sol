@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
-import "hardhat/console.sol";
 
 /**
  * @title TicTacToe
@@ -13,14 +12,15 @@ import "hardhat/console.sol";
 
 contract TicTacToe {
 	uint256 public gameIdCounter = 0;
-    uint256 public immutable timeOutValue = 10 seconds;
+	uint256 public immutable timeOutValue = 20 minutes;
 
 	enum GameState {
 		PENDING,
 		PLAYING,
 		PLAYER1WON,
 		PLAYER2WON,
-		TIE
+		TIE,
+		DELETED
 	}
 
 	struct Game {
@@ -32,7 +32,7 @@ contract TicTacToe {
 		bool player2Withdrawn;
 		uint8[9] board; // 0 (no player): empty, 1 (player 1): X, 2 (player 2): O
 		uint8 moves; // Counter or the number of moves made
-        uint256 lastTimePlayed;
+		uint256 lastTimePlayed;
 	}
 
 	mapping(uint256 => Game) public games;
@@ -48,10 +48,7 @@ contract TicTacToe {
 		address indexed team1,
 		address indexed team2
 	);
-    event GameDeleted(
-        uint256 indexed gameId,
-        address indexed player1
-    );
+	event GameDeleted(uint256 indexed gameId);
 	event MoveMade(
 		uint256 indexed gameId,
 		address indexed player,
@@ -118,7 +115,7 @@ contract TicTacToe {
 			player2Withdrawn: false,
 			board: [0, 0, 0, 0, 0, 0, 0, 0, 0],
 			moves: 0,
-            lastTimePlayed : 0
+			lastTimePlayed: 0
 		});
 
 		// This event can be used by the frontend to know that something happened and react to it
@@ -137,33 +134,13 @@ contract TicTacToe {
 			game.bet == msg.value,
 			"You haven't sent the required ETH to accept"
 		);
-        // Set the initial time count to check the timeout
-        games[_gameId].lastTimePlayed = block.timestamp;
+		// Set the initial time count to check the timeout
+		games[_gameId].lastTimePlayed = block.timestamp;
 
 		// Set the game state to PLAYING and emit an event
 		games[_gameId].state = GameState.PLAYING;
 		emit GameAccepted(_gameId, game.player1, game.player2);
 	}
-
-    function deleteGame(uint256 _gameId) external {
-        Game memory game = games[_gameId];
-        require(game.player1 == msg.sender, "You must be player 1 to delete the request");
-        require(
-            game.state == GameState.PENDING,
-            "Game must be PENDING to be deleted"
-        );
-        require(
-            block.timestamp - games[_gameId].lastTimePlayed <= timeOutValue,
-            "Timeout value hasnt been reached yet!"
-        );
-
-        games[_gameId].state = GameState.TIE;
-        uint256 paidBetAmount = calculatePrize(_gameId);
-        require(paidBetAmount > 0, "Invalid bet amount");
-        // Transfer the bet to the player
-        payable(msg.sender).transfer(paidBetAmount);
-        emit GameDeleted(_gameId, game.player1);
-    }
 
 	function makeMove(
 		uint256 _gameId,
@@ -172,15 +149,44 @@ contract TicTacToe {
 		// Determine the current Player symbol
 		// 1 is player1, 2 is player2
 		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
-        // Add the corresponding mark in the position of the game board
-        games[_gameId].board[position] = playerSymbol;
-        // And add 1 to the number of moves made in the game
-        games[_gameId].moves++;
-        games[_gameId].lastTimePlayed = block.timestamp;
+		// Add the corresponding mark in the position of the game board
+		games[_gameId].board[position] = playerSymbol;
+		// And add 1 to the number of moves made in the game
+		games[_gameId].moves++;
+		games[_gameId].lastTimePlayed = block.timestamp;
 
-        emit MoveMade(_gameId, msg.sender, position);
+		emit MoveMade(_gameId, msg.sender, position);
 		// Check if after adding that symbol, a win is achieved, and react to it if that's the case
 		checkWin(_gameId, position, msg.sender);
+	}
+
+	// For when game wasn't accepted and player wants to recover betted ammount
+	function deleteGame(uint256 _gameId) external {
+		Game memory game = games[_gameId];
+		require(
+			msg.sender == game.player1,
+			"You must be player 1 to delete the request"
+		);
+		require(
+			game.state == GameState.PENDING,
+			"Game must be PENDING to be deleted"
+		);
+
+		games[_gameId].state = GameState.DELETED;
+
+		payable(msg.sender).transfer(game.bet);
+		emit GameDeleted(_gameId);
+	}
+
+	// To incentivize players to keep playing or not quit half a game to not allow the other part to withdraw prize
+	function winByTimeout(uint256 _gameId) external {
+		require(
+			block.timestamp - games[_gameId].lastTimePlayed > timeOutValue,
+			"Timeout value hasnt been reached yet!"
+		);
+		games[_gameId].moves % 2 == 0
+			? finishGame(_gameId, games[_gameId].player2)
+			: finishGame(_gameId, games[_gameId].player1);
 	}
 
 	// Function to withdraw the prize based on game state
@@ -202,7 +208,7 @@ contract TicTacToe {
 				"You have already withdrawn the prize!"
 			);
 			game.player1Withdrawn = true;
-		} 
+		}
 
 		// WITHDRAW RULES FOR PLAYER 2 VICTORY
 		if (game.state == GameState.PLAYER2WON && msg.sender == game.player2) {
@@ -211,17 +217,23 @@ contract TicTacToe {
 				"You have already withdrawn the prize!"
 			);
 			game.player2Withdrawn = true;
-		} 
+		}
 
 		// WITHDRAW RULES FOR TIE RESULT
 		if (game.state == GameState.TIE) {
 			if (msg.sender == game.player1) {
-				require(!game.player1Withdrawn,"You have already withdrawn the prize!");
+				require(
+					!game.player1Withdrawn,
+					"You have already withdrawn the prize!"
+				);
 				game.player1Withdrawn = true;
 			} else if (msg.sender == game.player2) {
-				require(!game.player2Withdrawn,	"You have already withdrawn the prize!");
+				require(
+					!game.player2Withdrawn,
+					"You have already withdrawn the prize!"
+				);
 				game.player2Withdrawn = true;
-				}
+			}
 		}
 
 		// Calculate and transfer the prize based on the game state
@@ -234,11 +246,6 @@ contract TicTacToe {
 
 	/* INTERNAL FUNCTIONS */
 
-    function winByTimeout(uint256 _gameId) internal {
-        require(block.timestamp - games[_gameId].lastTimePlayed > timeOutValue, "Timeout value hasnt been reached yet!");
-        games[_gameId].moves % 2 == 0 ? finishGame(_gameId, games[_gameId].player2) : finishGame(_gameId, games[_gameId].player1);
-    }
-    
 	function checkWin(
 		uint256 _gameId,
 		uint8 _position,
@@ -330,7 +337,7 @@ contract TicTacToe {
 			return totalBet;
 		} else if (game.state == GameState.TIE) {
 			// In the case of a tie, split the total bet equally between players
-			return totalBet / 2;
+			return game.bet;
 		} else {
 			// Invalid game state
 			revert("Invalid game state");
@@ -351,15 +358,23 @@ contract TicTacToe {
 		return games[_gameId].board;
 	}
 
-	function getGameState(uint256 _gameId) public view returns (GameState)  {
+	function getGameState(uint256 _gameId) public view returns (GameState) {
 		return games[_gameId].state;
 	}
 
-	function hasPlayer1WithdrawnPrize(uint256 _gameId) public view returns(bool) {
+	function getLastTimePlayed(uint256 _gameId) public view returns (uint256) {
+		return games[_gameId].lastTimePlayed;
+	}
+
+	function hasPlayer1WithdrawnPrize(
+		uint256 _gameId
+	) public view returns (bool) {
 		return games[_gameId].player1Withdrawn;
 	}
 
-	function hasPlayer2WithdrawnPrize(uint256 _gameId) public view returns(bool) {
+	function hasPlayer2WithdrawnPrize(
+		uint256 _gameId
+	) public view returns (bool) {
 		return games[_gameId].player2Withdrawn;
 	}
 }
