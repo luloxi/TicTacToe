@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     TicTacToe: {
-      address: "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
         {
           anonymous: false,
@@ -63,6 +63,25 @@ const deployedContracts = {
             },
           ],
           name: "GameCreated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "gameId",
+              type: "uint256",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "player1",
+              type: "address",
+            },
+          ],
+          name: "GameDeleted",
           type: "event",
         },
         {
@@ -139,6 +158,19 @@ const deployedContracts = {
           name: "createGame",
           outputs: [],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "deleteGame",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -351,6 +383,19 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "winByTimeout",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {

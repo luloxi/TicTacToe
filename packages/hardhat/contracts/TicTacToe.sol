@@ -48,6 +48,10 @@ contract TicTacToe {
 		address indexed team1,
 		address indexed team2
 	);
+    event GameDeleted(
+        uint256 indexed gameId,
+        address indexed player1
+    );
 	event MoveMade(
 		uint256 indexed gameId,
 		address indexed player,
@@ -141,6 +145,26 @@ contract TicTacToe {
 		emit GameAccepted(_gameId, game.player1, game.player2);
 	}
 
+    function deleteGame(uint256 _gameId) external {
+        Game memory game = games[_gameId];
+        require(game.player1 == msg.sender, "You must be player 1 to delete the request");
+        require(
+            game.state == GameState.PENDING,
+            "Game must be PENDING to be deleted"
+        );
+        require(
+            block.timestamp - games[_gameId].lastTimePlayed <= timeOutValue,
+            "Timeout value hasnt been reached yet!"
+        );
+
+        games[_gameId].state = GameState.TIE;
+        uint256 paidBetAmount = calculatePrize(_gameId);
+        require(paidBetAmount > 0, "Invalid bet amount");
+        // Transfer the bet to the player
+        payable(msg.sender).transfer(paidBetAmount);
+        emit GameDeleted(_gameId, game.player1);
+    }
+
 	function makeMove(
 		uint256 _gameId,
 		uint8 position
@@ -148,19 +172,13 @@ contract TicTacToe {
 		// Determine the current Player symbol
 		// 1 is player1, 2 is player2
 		uint8 playerSymbol = games[_gameId].moves % 2 == 0 ? 1 : 2;
-        // Check if the current player exceeds time and lose
-        if (block.timestamp - games[_gameId].lastTimePlayed > timeOutValue) {
-            finishGame(_gameId, playerSymbol == 1 ? games[_gameId].player2 : games[_gameId].player1);
-        }
-        else {
-            // Add the corresponding mark in the position of the game board
-            games[_gameId].board[position] = playerSymbol;
-            // And add 1 to the number of moves made in the game
-            games[_gameId].moves++;
-            games[_gameId].lastTimePlayed = block.timestamp;
+        // Add the corresponding mark in the position of the game board
+        games[_gameId].board[position] = playerSymbol;
+        // And add 1 to the number of moves made in the game
+        games[_gameId].moves++;
+        games[_gameId].lastTimePlayed = block.timestamp;
 
-            emit MoveMade(_gameId, msg.sender, position);
-        }
+        emit MoveMade(_gameId, msg.sender, position);
 		// Check if after adding that symbol, a win is achieved, and react to it if that's the case
 		checkWin(_gameId, position, msg.sender);
 	}
@@ -216,6 +234,11 @@ contract TicTacToe {
 
 	/* INTERNAL FUNCTIONS */
 
+    function winByTimeout(uint256 _gameId) internal {
+        require(block.timestamp - games[_gameId].lastTimePlayed > timeOutValue, "Timeout value hasnt been reached yet!");
+        games[_gameId].moves % 2 == 0 ? finishGame(_gameId, games[_gameId].player2) : finishGame(_gameId, games[_gameId].player1);
+    }
+    
 	function checkWin(
 		uint256 _gameId,
 		uint8 _position,
