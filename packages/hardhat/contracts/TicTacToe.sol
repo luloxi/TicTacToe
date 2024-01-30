@@ -52,7 +52,8 @@ contract TicTacToe {
 	event MoveMade(
 		uint256 indexed gameId,
 		address indexed player,
-		uint8 position
+		uint8 position,
+		uint256 lastTimePlayed
 	);
 	event GameFinished(
 		uint256 indexed gameId,
@@ -155,7 +156,7 @@ contract TicTacToe {
 		games[_gameId].moves++;
 		games[_gameId].lastTimePlayed = block.timestamp;
 
-		emit MoveMade(_gameId, msg.sender, position);
+		emit MoveMade(_gameId, msg.sender, position, block.timestamp);
 		// Check if after adding that symbol, a win is achieved, and react to it if that's the case
 		checkWin(_gameId, position, msg.sender);
 	}
@@ -347,7 +348,7 @@ contract TicTacToe {
 	/* VIEW AND PURE FUNCTIONS */
 
 	function getCurrentPlayer(uint256 _gameId) public view returns (uint8) {
-		return games[_gameId].moves % 2 == 0 ? 1 : 2;
+		return games[_gameId].moves % 2 == 0 ? 2 : 1;
 	}
 
 	function getNumberOfMoves(uint256 _gameId) public view returns (uint8) {

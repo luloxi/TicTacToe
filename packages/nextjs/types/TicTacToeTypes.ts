@@ -15,6 +15,7 @@ export type MoveMadeProps = {
   gameId: number;
   player: string;
   position: number;
+  lastTimePlayed: number;
 };
 
 export type GameFinishedProps = {

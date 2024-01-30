@@ -67,6 +67,9 @@ const CreateChallengeBox = ({}) => {
           <Text fontWeight={"bold"} mt={0} mb={0}>
             Winner gets all, Tie gives back the ETH
           </Text>
+          <Text>
+            If your oponent doesn&apos;t make a move before timeout, the opposite player can trigger an early win.
+          </Text>
           <Button
             variant="solid"
             onClick={event => {
