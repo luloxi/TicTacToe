@@ -24,6 +24,8 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   }, null);
 
   const lastTimePlayed = highestLastTimePlayedMove?.args[3];
+  const lastPlayerPlayed = highestLastTimePlayedMove?.args["player"] ?? game.player1;
+  const isCurrentPlayerPlaying = currentPlayer === game.player1 || currentPlayer === game.player2;
   const currentTime = Math.floor(new Date().getTime() / 1000);
 
   const { data: boardFromContract } = useScaffoldContractRead({
@@ -123,9 +125,15 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
         </Box>
       </Flex>
       <Flex direction="row" justifyContent={"center"} textAlign={"center"} gap={6} padding={3}>
-        <Address address={game.player1} />{" "}
+        <Box>
+          <Address address={game.player1} />
+          {"Player ⭕"} <strong>{game.player1 === currentPlayer && "(You)"}</strong>
+        </Box>
         {isGameAccepted ? (isGameFinished ? "played against" : "is playing against") : "challenged"}
-        <Address address={game.player2} />
+        <Box>
+          <Address address={game.player2} />
+          {"Player ❌"} <strong>{game.player2 === currentPlayer && "(You)"}</strong>
+        </Box>
       </Flex>
       {isGameAccepted && !isGameFinished ? (
         <Box alignItems={"center"} textAlign={"center"} justifyContent={"center"} textColor={"red"}>
@@ -211,10 +219,10 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                   ""
                 )}
               </strong>
-            ) : currentPlayer == game.player1 ? (
-              <strong>You&apos;re player ⭕</strong>
-            ) : currentPlayer == game.player2 ? (
-              <strong>You&apos;re player ❌</strong>
+            ) : isCurrentPlayerPlaying && lastPlayerPlayed !== currentPlayer ? (
+              <strong>Your turn</strong>
+            ) : isCurrentPlayerPlaying && lastPlayerPlayed === currentPlayer ? (
+              <p>Waiting for the opponent</p>
             ) : (
               <strong>Game in progress</strong>
             )}
