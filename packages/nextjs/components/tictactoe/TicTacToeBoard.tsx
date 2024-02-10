@@ -117,7 +117,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
   });
 
   return (
-    <Box key={game.gameId} marginY={6}>
+    <Box key={game.gameId} marginBottom={6}>
       <Flex fontSize={24} textColor={"red"} alignItems={"center"} justifyContent={"center"} paddingTop={3}>
         Game Id #
         <Box fontSize={36} textColor={"white"}>
