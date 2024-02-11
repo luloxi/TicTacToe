@@ -13,6 +13,7 @@ import { FilterProps } from "~~/types/TicTacToeTypes";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchFilters, setSearchFilters] = useState<FilterProps[]>([
     { label: "Your Games", selected: true },
     { label: "Not Finished Games", selected: false },
@@ -21,6 +22,7 @@ const Home: NextPage = () => {
   const [gameCards, setGameCards] = useState<any[]>([]);
 
   const updateSearchFilters = (index: number) => {
+    setIsLoading(true);
     setSearchFilters(prevFilters => {
       const updatedFilters = [...prevFilters];
       updatedFilters[index] = {
@@ -32,6 +34,7 @@ const Home: NextPage = () => {
   };
 
   const updateSearchInput = (newSearchInput: string) => {
+    setIsLoading(true);
     setSearchInput(newSearchInput);
   };
 
@@ -87,7 +90,8 @@ const Home: NextPage = () => {
       return { game, isGameAccepted, isGameFinished, isGameDeleted, movesMade };
     });
     setGameCards(data!);
-  }, 1000);
+    setIsLoading(false);
+  }, 1500);
 
   return (
     <>
@@ -134,7 +138,9 @@ const Home: NextPage = () => {
                   searchInput={searchInput}
                   updateSearchInput={updateSearchInput}
                 />
-                {gameCards?.length > 0 ? (
+                {isLoading ? (
+                  <p className="text-2xl text-base-content">Loading...</p>
+                ) : gameCards?.length > 0 ? (
                   gameCards?.map(({ game, isGameAccepted, isGameFinished, isGameDeleted, movesMade }) => (
                     <TicTacToeBoard
                       key={game.args[0]}
