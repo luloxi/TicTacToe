@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, CardBody, Flex } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { useInterval } from "usehooks-ts";
+import { isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
 import { SearchBar } from "~~/components/searchBar/SearchBar";
@@ -14,8 +15,9 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [searchFilters, setSearchFilters] = useState<FilterProps[]>([
     { label: "Your Games", selected: true },
-    { label: "Active Games", selected: false },
+    { label: "Not Finished Games", selected: false },
   ]);
+  const [searchInput, setSearchInput] = useState<string>("");
   const [gameCards, setGameCards] = useState<any[]>([]);
 
   const updateSearchFilters = (index: number) => {
@@ -27,6 +29,10 @@ const Home: NextPage = () => {
       };
       return updatedFilters;
     });
+  };
+
+  const updateSearchInput = (newSearchInput: string) => {
+    setSearchInput(newSearchInput);
   };
 
   const { data: GameCreatedHistory } = useScaffoldEventHistory({
@@ -63,6 +69,16 @@ const Home: NextPage = () => {
         game1 => !GameFinishedHistory?.some(game2 => game1?.args?.["gameId"] === game2?.args?.["gameId"]),
       );
     }
+    if (searchInput && isAddress(searchInput)) {
+      filteredData = GameCreatedHistory?.filter(
+        game => game.args["player1"] === searchInput || game.args["player2"] === searchInput,
+      );
+    }
+    // else if (searchInput && !isNaN(parseInt(searchInput))) {
+    //   const adjustedId = GameCreatedHistory !== undefined ? GameCreatedHistory?.length - parseInt(searchInput) : 0;
+    //   const accessedElement = GameCreatedHistory?.[adjustedId];
+    //   filteredData = accessedElement !== undefined ? [accessedElement] : [];
+    // }
 
     const data = filteredData?.map(game => {
       const isGameAccepted = GameAcceptedHistory?.some(acceptedGame => acceptedGame.args[0] === game.args[0]);
@@ -113,8 +129,13 @@ const Home: NextPage = () => {
             <CardBody>
               {/* <Heading size="xl">⭕ See your active challenges! ❌</Heading> */}
               <Flex direction="column" alignItems="center" justifyContent="center">
-                <SearchBar searchFilters={searchFilters} updateSearchFilters={updateSearchFilters} />
-                {gameCards.length > 0 ? (
+                <SearchBar
+                  searchFilters={searchFilters}
+                  updateSearchFilters={updateSearchFilters}
+                  searchInput={searchInput}
+                  updateSearchInput={updateSearchInput}
+                />
+                {gameCards?.length > 0 ? (
                   gameCards?.map(({ game, isGameAccepted, isGameFinished, isGameDeleted, movesMade }) => (
                     <TicTacToeBoard
                       key={game.args[0]}
