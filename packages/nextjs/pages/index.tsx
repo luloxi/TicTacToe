@@ -73,12 +73,11 @@ const Home: NextPage = () => {
       filteredData = GameCreatedHistory?.filter(
         game => game.args["player1"] === searchInput || game.args["player2"] === searchInput,
       );
+    } else if (searchInput && !isNaN(parseInt(searchInput))) {
+      const adjustedId = GameCreatedHistory !== undefined ? GameCreatedHistory?.length - parseInt(searchInput) : 0;
+      const accessedElement = GameCreatedHistory?.[adjustedId];
+      filteredData = accessedElement !== undefined ? [accessedElement] : [];
     }
-    // else if (searchInput && !isNaN(parseInt(searchInput))) {
-    //   const adjustedId = GameCreatedHistory !== undefined ? GameCreatedHistory?.length - parseInt(searchInput) : 0;
-    //   const accessedElement = GameCreatedHistory?.[adjustedId];
-    //   filteredData = accessedElement !== undefined ? [accessedElement] : [];
-    // }
 
     const data = filteredData?.map(game => {
       const isGameAccepted = GameAcceptedHistory?.some(acceptedGame => acceptedGame.args[0] === game.args[0]);
