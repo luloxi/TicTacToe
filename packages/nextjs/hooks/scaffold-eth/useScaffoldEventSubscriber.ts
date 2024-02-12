@@ -30,7 +30,7 @@ export const useScaffoldEventSubscriber = <
 
   return useContractEvent({
     address: deployedContractData?.address,
-    abi: deployedContractData?.abi as Abi,
+    abi: deployedContractData?.abi as Abi, // eslint-disable-line no-use-before-define
     chainId: targetNetwork.id,
     listener: listenerWithIndexedArgs,
     eventName,
