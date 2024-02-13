@@ -1,15 +1,18 @@
 import { useState } from "react";
-import { Card, CardBody, Flex } from "@chakra-ui/react";
+import { Box, Card, CardBody, Flex } from "@chakra-ui/react";
 import type { NextPage } from "next";
 import { useInterval } from "usehooks-ts";
 import { isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { MetaHeader } from "~~/components/MetaHeader";
+import Pagination from "~~/components/pagination/Pagination";
 import { SearchBar } from "~~/components/searchBar/SearchBar";
 import CreateChallengeBox from "~~/components/tictactoe/CreateChallengeBox";
 import TicTacToeBoard from "~~/components/tictactoe/TicTacToeBoard";
 import { useScaffoldEventHistory } from "~~/hooks/scaffold-eth";
 import { FilterProps } from "~~/types/TicTacToeTypes";
+
+const PAGE_SIZE = 5;
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
@@ -21,8 +24,18 @@ const Home: NextPage = () => {
   const [searchInput, setSearchInput] = useState<string>("");
   const [gameCards, setGameCards] = useState<any[]>([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(Math.ceil(totalItems / PAGE_SIZE));
+
+  const onPageChange = (page: number) => {
+    setIsLoading(true);
+    setCurrentPage(page);
+  };
+
   const updateSearchFilters = (index: number) => {
     setIsLoading(true);
+    setCurrentPage(1);
     setSearchFilters(prevFilters => {
       const updatedFilters = [...prevFilters];
       updatedFilters[index] = {
@@ -35,6 +48,7 @@ const Home: NextPage = () => {
 
   const updateSearchInput = (newSearchInput: string) => {
     setIsLoading(true);
+    setCurrentPage(1);
     setSearchInput(newSearchInput);
   };
 
@@ -59,7 +73,6 @@ const Home: NextPage = () => {
   const GameDeletedHistory = useEventData("GameDeleted");
   const GameFinishedHistory = useEventData("GameFinished");
   const MoveMadeHistory = useEventData("MoveMade");
-
   useInterval(() => {
     let filteredData = GameCreatedHistory;
     if (searchFilters[0]?.selected) {
@@ -81,18 +94,23 @@ const Home: NextPage = () => {
       const accessedElement = GameCreatedHistory?.[adjustedId];
       filteredData = accessedElement !== undefined ? [accessedElement] : [];
     }
-
-    const data = filteredData?.map(game => {
-      const isGameAccepted = GameAcceptedHistory?.some(acceptedGame => acceptedGame.args[0] === game.args[0]);
-      const isGameFinished = GameFinishedHistory?.some(finishedGame => finishedGame.args[0] === game.args[0]);
-      const isGameDeleted = GameDeletedHistory?.some(deletedGame => deletedGame.args[0] === game.args[0]);
-      const movesMade = MoveMadeHistory?.filter(moveMade => moveMade.args[0] == game.args[0]);
-      return { game, isGameAccepted, isGameFinished, isGameDeleted, movesMade };
-    });
-    setGameCards(data!);
+    if (filteredData) {
+      setTotalPages(Math.ceil(filteredData?.length / PAGE_SIZE));
+      setTotalItems(filteredData?.length);
+      const startIndex = (currentPage - 1) * PAGE_SIZE;
+      const endIndex = Math.min(startIndex + PAGE_SIZE, filteredData?.length);
+      const data = filteredData?.map(game => {
+        const isGameAccepted = GameAcceptedHistory?.some(acceptedGame => acceptedGame.args[0] === game.args[0]);
+        const isGameFinished = GameFinishedHistory?.some(finishedGame => finishedGame.args[0] === game.args[0]);
+        const isGameDeleted = GameDeletedHistory?.some(deletedGame => deletedGame.args[0] === game.args[0]);
+        const movesMade = MoveMadeHistory?.filter(moveMade => moveMade.args[0] == game.args[0]);
+        return { game, isGameAccepted, isGameFinished, isGameDeleted, movesMade };
+      });
+      const slicedData = data?.slice(startIndex, endIndex);
+      setGameCards(slicedData);
+    }
     setIsLoading(false);
   }, 1500);
-
   return (
     <>
       <MetaHeader />
@@ -161,6 +179,11 @@ const Home: NextPage = () => {
                   <Flex fontSize={24} textColor={"red"} alignItems={"center"} justifyContent={"center"} paddingTop={3}>
                     Games weren&apos;t found
                   </Flex>
+                )}
+                {gameCards?.length > 0 && (
+                  <Box marginBottom={3}>
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+                  </Box>
                 )}
               </Flex>
             </CardBody>
