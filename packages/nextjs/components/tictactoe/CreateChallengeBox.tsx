@@ -68,7 +68,8 @@ const CreateChallengeBox = ({}) => {
             Winner gets all, Tie gives back the ETH
           </Text>
           <Text>
-            If your oponent doesn&apos;t make a move before timeout, the opposite player can trigger an early win.
+            If a player doesn&apos;t make a move before timeout, <br />
+            the opposite player can <strong>trigger an early win</strong>.
           </Text>
           <Button
             variant="solid"
