@@ -436,7 +436,7 @@ const deployedContracts = {
   },
   11155111: {
     TicTacToe: {
-      address: "0xaeDA4710e068c5f53Dfb8303576BEF327697EDB0",
+      address: "0xA1e32bAAE8544886C060A61f05C3b06b6140EFfa",
       abi: [
         {
           anonymous: false,
@@ -503,6 +503,19 @@ const deployedContracts = {
               name: "gameId",
               type: "uint256",
             },
+          ],
+          name: "GameDeleted",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "uint256",
+              name: "gameId",
+              type: "uint256",
+            },
             {
               indexed: true,
               internalType: "address",
@@ -540,6 +553,12 @@ const deployedContracts = {
               name: "position",
               type: "uint8",
             },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "lastTimePlayed",
+              type: "uint256",
+            },
           ],
           name: "MoveMade",
           type: "event",
@@ -568,6 +587,19 @@ const deployedContracts = {
           name: "createGame",
           outputs: [],
           stateMutability: "payable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "deleteGame",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
@@ -628,6 +660,11 @@ const deployedContracts = {
               name: "moves",
               type: "uint8",
             },
+            {
+              internalType: "uint256",
+              name: "lastTimePlayed",
+              type: "uint256",
+            },
           ],
           stateMutability: "view",
           type: "function",
@@ -684,6 +721,25 @@ const deployedContracts = {
               internalType: "enum TicTacToe.GameState",
               name: "",
               type: "uint8",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "getLastTimePlayed",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
             },
           ],
           stateMutability: "view",
@@ -760,6 +816,32 @@ const deployedContracts = {
             },
           ],
           name: "makeMove",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "timeOutValue",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "_gameId",
+              type: "uint256",
+            },
+          ],
+          name: "winByTimeout",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
