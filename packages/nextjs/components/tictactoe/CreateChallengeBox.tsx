@@ -26,13 +26,13 @@ const CreateChallengeBox = ({}) => {
       variant="solid"
       textColor={"white"}
       marginRight={4}
-      backgroundColor={"gray.900"}
+      backgroundColor={"#111"}
       textAlign={"center"}
     >
       <Stack>
         <CardBody>
           <Heading size="xl">⭕ Play and bet on a Tic Tac Toe game! ❌</Heading>
-          <Text fontWeight={"bold"} marginBottom={0}>
+          <Text fontWeight={"bold"} marginBottom={0} color={"red"}>
             ⚔️ Who do you want to challenge? ⚔️
           </Text>
           <AddressInput
@@ -48,8 +48,8 @@ const CreateChallengeBox = ({}) => {
             <Box marginY={2}>Enter an address to view their Balance!</Box>
           )}
           <br />
-          <Text fontWeight={"bold"} marginBottom={0} marginTop={0}>
-            💰 (optional) Bet ETH on the match outcome 💰
+          <Text fontWeight={"bold"} marginBottom={0} marginTop={0} color={"red"}>
+            💰 Bet ETH on the match outcome 💰
           </Text>
           <EtherInput
             placeholder="Enter your bet amount in ETH or USD"
@@ -77,7 +77,7 @@ const CreateChallengeBox = ({}) => {
               event.preventDefault();
               createGame();
             }}
-            backgroundColor={"red.500"}
+            backgroundColor={"red"}
             textColor={"white"}
             colorScheme="orange"
             marginTop={4}

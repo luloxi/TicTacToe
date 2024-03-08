@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Address } from "../scaffold-eth";
-import { Box, Button, Flex, Grid } from "@chakra-ui/react";
-import { ethers } from "ethers";
+import { TokenAmount } from "../scaffold-eth/TokenAmount";
+import { Box, Button, Flex, Grid, Text } from "@chakra-ui/react";
 import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { TicTacToeBoardProps } from "~~/types/TicTacToeTypes";
 
@@ -127,12 +127,17 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
       <Flex direction="row" justifyContent={"center"} textAlign={"center"} gap={6} padding={3}>
         <Box>
           <Address address={game.player1} />
-          {"Player ⭕"} <strong>{game.player1 === currentPlayer && "(You)"}</strong>
+          <Text marginTop={0} color="red" as="b">
+            {" "}
+            {"Player ⭕"} <strong>{game.player1 === currentPlayer && "(You)"}</strong>
+          </Text>
         </Box>
         {isGameAccepted ? (isGameFinished ? "played against" : "is playing against") : "challenged"}
         <Box>
           <Address address={game.player2} />
-          {"Player ❌"} <strong>{game.player2 === currentPlayer && "(You)"}</strong>
+          <Text marginTop={0} color="red" as="b">
+            {"Player ❌"} <strong>{game.player2 === currentPlayer && "(You)"}</strong>
+          </Text>
         </Box>
       </Flex>
       {isGameAccepted && !isGameFinished ? (
@@ -168,8 +173,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           paddingBottom={3}
         >
           <Box>
-            Each player bets: <br />{" "}
-            <strong>{parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH</strong>
+            Each player bets: <br /> <TokenAmount amount={game.bet} isEth={true} />
           </Box>
           <Box>
             {game.player2 === currentPlayer ? (
@@ -181,7 +185,7 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
                 <Button colorScheme={"red"} onClick={() => deleteGame()}>
                   Delete game
                 </Button>
-                <Box>Recover your betted amount (if any)</Box>
+                <Box>Recover your betted amount</Box>
               </>
             ) : (
               ""
@@ -199,14 +203,13 @@ const TicTacToeBoard: React.FC<TicTacToeBoardProps> = ({
           paddingBottom={3}
         >
           <Box>
-            Each player betted: <br />{" "}
-            <strong>{parseFloat(ethers.formatEther(game.bet.toString())).toFixed(4)} ETH</strong>
+            Each player betted: <br /> <TokenAmount amount={game.bet} isEth={true} />
           </Box>
 
           <Box>
             {isGameFinished ? (
               <strong>
-                Game has finished
+                <Text color={"red"}>Game has finished!</Text>
                 <br />
                 {(gameState == 2 && currentPlayer == game.player1 && !player1WithdrawnPrize) ||
                 (gameState == 3 && currentPlayer == game.player2 && !player2WithdrawnPrize) ||

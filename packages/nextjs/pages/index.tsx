@@ -18,8 +18,8 @@ const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchFilters, setSearchFilters] = useState<FilterProps[]>([
-    { label: "Your Games", selected: true },
-    { label: "Not Finished Games", selected: false },
+    { label: "Only your games", selected: false },
+    { label: "Only unfinished games", selected: false },
   ]);
   const [searchInput, setSearchInput] = useState<string>("");
   const [gameCards, setGameCards] = useState<any[]>([]);
@@ -145,10 +145,9 @@ const Home: NextPage = () => {
             maxHeight={{ base: "240", sm: "240", md: "360", lg: "540" }}
             overflow={"auto"}
             textColor={"white"}
-            backgroundColor={"gray.900"}
+            backgroundColor={"#111"}
           >
             <CardBody>
-              {/* <Heading size="xl">⭕ See your active challenges! ❌</Heading> */}
               <Flex direction="column" alignItems="center" justifyContent="center">
                 <SearchBar
                   searchFilters={searchFilters}

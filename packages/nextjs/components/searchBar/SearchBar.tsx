@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Box, Checkbox, Stack } from "@chakra-ui/react";
+import { Box, Button, Checkbox, Input, Stack, Text } from "@chakra-ui/react";
 import { isHex } from "viem";
 import { SearchBarProps } from "~~/types/TicTacToeTypes";
 import { notification } from "~~/utils/scaffold-eth";
@@ -17,26 +17,38 @@ export const SearchBar: React.FC<SearchBarProps> = ({ searchFilters, updateSearc
   };
 
   return (
-    <Box width={"75%"}>
+    <Box width={"85%"}>
       <form onSubmit={handleSearch} className="flex items-center justify-end mb-5 space-x-3 mx-5">
-        <input
-          className="border-primary bg-base-100 text-base-content p-2 mr-2 w-full rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-accent"
+        <Input
           type="text"
           value={input}
           placeholder="Search by gameId or address"
           onChange={e => setInput(e.target.value)}
+          variant="flushed"
+          focusBorderColor="#FF0000"
+          _placeholder={{ opacity: 0.5, color: "gray.100" }}
         />
-        <button className="btn btn-sm btn-primary" type="submit">
+        <Button type="submit" variant="solid" backgroundColor={"red"} textColor={"white"} colorScheme="orange">
           Search
-        </button>
+        </Button>
       </form>
-      <Stack spacing={5} direction="row">
+      <Stack spacing={5} direction="row" justifyContent={"center"}>
         {searchFilters.map((filter, index) => (
-          <Checkbox key={index} onChange={() => updateSearchFilters(index)} defaultChecked={filter?.selected}>
-            {filter?.label}
+          <Checkbox
+            colorScheme="red"
+            key={index}
+            onChange={() => updateSearchFilters(index)}
+            defaultChecked={filter?.selected}
+          >
+            <Text marginTop={0} color="red" as="i">
+              {" "}
+              {filter?.label}
+            </Text>
           </Checkbox>
         ))}
       </Stack>
+      <br />
+      <hr />
     </Box>
   );
 };
