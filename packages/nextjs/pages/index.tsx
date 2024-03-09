@@ -117,7 +117,7 @@ const Home: NextPage = () => {
       <div
         style={{
           position: "relative",
-          minHeight: "80vh",
+          minHeight: "95vh",
         }}
       >
         <div
